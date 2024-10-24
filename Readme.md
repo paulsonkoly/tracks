@@ -28,3 +28,11 @@ Rollup is used to build the static javascript bundle in / static.
 cd vendor
 npx rollup -c -w
 ```
+
+### air
+
+Air is used to live reload the go server. It doesn't work if the current working path has symlinks.
+
+```
+air -d
+```

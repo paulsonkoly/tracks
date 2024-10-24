@@ -7,7 +7,7 @@ An open source web application for displaying and managing GPX tracks.
 Install node dependencies first:
 
 ```bash
-cd vendor
+cd assets
 npm install
 ```
 
@@ -16,7 +16,7 @@ npm install
 Tailwind is used to build the static CSS bundle in /static. It watches `static/{html,js}/**/*.{html,js}`, `ui/html/**/*.html` for changes and recompiles the CSS.
 
 ```bash
-cd vendor
+cd assets
 npx tailwindcss -i tracks.css -o ../static/css/tracks.css --watch
 ```
 
@@ -25,7 +25,7 @@ npx tailwindcss -i tracks.css -o ../static/css/tracks.css --watch
 Rollup is used to build the static javascript bundle in / static.
 
 ```
-cd vendor
+cd assets
 npx rollup -c -w
 ```
 

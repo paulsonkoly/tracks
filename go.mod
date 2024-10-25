@@ -4,7 +4,9 @@ go 1.23.2
 
 require (
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/joho/godotenv v1.5.1
 	github.com/justinas/alice v1.2.0
+	github.com/lib/pq v1.10.9
 	github.com/tkrajina/gpxgo v1.4.0
 )
 

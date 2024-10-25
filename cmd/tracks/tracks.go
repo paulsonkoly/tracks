@@ -1,19 +1,30 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	_ "github.com/lib/pq"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	db := openDB()
+	defer db.Close()
+
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	app := app.NewApp(logger)
+	app := app.NewApp(logger, db)
 
 	mux := http.NewServeMux()
 
@@ -23,10 +34,29 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fs))
 
-	err := http.ListenAndServe("0.0.0.0:9999", app.StandardChain().Then(mux))
+	err = http.ListenAndServe("0.0.0.0:9999", app.StandardChain().Then(mux))
 	if err != nil {
 		panic(err)
 	}
+}
+
+func openDB() *sql.DB {
+	dburl := os.Getenv("DATABASE_URL")
+	if dburl == "" {
+		panic("DATABASE_URL is not set")
+	}
+
+	db, err := sql.Open("postgres", dburl)
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }
 
 func viewTrack(w http.ResponseWriter, _ *http.Request) {

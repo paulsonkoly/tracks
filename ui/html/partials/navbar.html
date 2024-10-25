@@ -1,0 +1,39 @@
+{{define "navbar"}}
+<!-- Navbar -->
+<nav class="bg-green-600 text-white shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <!-- Left Side - Brand Logo or Name -->
+      <div class="flex items-center">
+        <a href="/" class="text-2xl font-semibold text-white hover:text-gray-200">
+          Tracks
+        </a>
+      </div>
+      <!-- Centre - Nav Links -->
+      <div class="md:flex space-x-8">
+        <a href="#" class="text-white hover:text-gray-200">Home</a>
+        <a href="#" class="text-white hover:text-gray-200">About</a>
+        <a href="#" class="text-white hover:text-gray-200">Contact</a>
+      </div>
+      <!-- Login/Logout -->
+      <div class="flex items-center space-x-4">
+        <!-- Conditional Login/Logout Button -->
+        {{if .CurrentUser}}
+        <!-- Logout Button -->
+        <form action="/user/logout" method="POST" class="text-center">
+          <!-- CSRF Token (for security, if applicable) -->
+          <!-- <input type="hidden" name="_token" value="YOUR_CSRF_TOKEN_HERE"> -->
+
+          <button type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition">
+            Logout
+          </button>
+        </form>
+        {{else}}
+        <a href="/user/login" class="text-white hover:text-gray-200">Login</a>
+        {{end}}
+      </div>
+    </div>
+  </div>
+</nav>
+{{end}}

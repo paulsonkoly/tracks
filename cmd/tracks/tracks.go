@@ -3,14 +3,18 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	_ "github.com/lib/pq"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 
+	_ "github.com/lib/pq"
+
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
+	"github.com/paulsonkoly/tracks/app/handlers"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
@@ -23,13 +27,22 @@ func main() {
 	db := openDB()
 	defer db.Close()
 
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	app := app.NewApp(logger, db)
+	app := app.New(logger, db, sessionManager)
+
+  handlers := handlers.New(app)
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", viewTracks)
+	mux.HandleFunc("GET /", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/", viewTrack)
+
+	mux.HandleFunc("GET /user/login", viewUserLogin)
+	mux.HandleFunc("POST /user/login", handlers.PostUserLogin)
+	mux.HandleFunc("POST /user/logout", handlers.PostUserLogout)
 
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fs))
@@ -85,9 +98,8 @@ func viewTrack(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func viewTracks(w http.ResponseWriter, _ *http.Request) {
-
-	t, err := template.ParseFiles("ui/html/base.html", "ui/html/track/track.html")
+func viewUserLogin(w http.ResponseWriter, _ *http.Request) {
+	t, err := template.ParseFiles("ui/html/base.html", "ui/html/partials/navbar.html", "ui/html/user/login.html")
 	if err != nil {
 		panic(err)
 	}
@@ -97,3 +109,4 @@ func viewTracks(w http.ResponseWriter, _ *http.Request) {
 		panic(err)
 	}
 }
+

@@ -8,7 +8,7 @@ import (
 )
 
 func (a *App) StandardChain() alice.Chain {
-	return alice.New(a.Recover, a.LogRequest, a.Headers)
+	return alice.New(a.Recover, a.SM.LoadAndSave, a.LogRequest, a.Headers)
 }
 
 func (a *App) Headers(next http.Handler) http.Handler {

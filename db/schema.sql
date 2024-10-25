@@ -23,6 +23,17 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sessions (
+    token character(43) NOT NULL,
+    data bytea NOT NULL,
+    expiry timestamp without time zone NOT NULL
+);
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -70,6 +81,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (token);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -86,6 +105,13 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: sessions_expiry_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -95,4 +121,5 @@ ALTER TABLE ONLY public.users
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20241024143931');
+    ('20241024143931'),
+    ('20241025092553');

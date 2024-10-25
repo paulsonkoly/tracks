@@ -36,3 +36,7 @@ Air is used to live reload the go server. It doesn't work if the current working
 ```
 air -d
 ```
+
+## database
+
+dbmate is used for migrations and sqlc is used for database access.

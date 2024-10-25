@@ -3,21 +3,27 @@ package main
 import (
 	"encoding/json"
 	"html/template"
+	"log/slog"
 	"net/http"
+	"os"
 
+	"github.com/paulsonkoly/tracks/app"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	app := app.NewApp(logger)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /", viewTracks)
-  mux.HandleFunc("GET /track/", viewTrack)
+	mux.HandleFunc("GET /track/", viewTrack)
 
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fs))
 
-	err := http.ListenAndServe("0.0.0.0:9999", mux)
+	err := http.ListenAndServe("0.0.0.0:9999", app.StandardChain().Then(mux))
 	if err != nil {
 		panic(err)
 	}
@@ -37,20 +43,19 @@ func viewTrack(w http.ResponseWriter, _ *http.Request) {
 		}
 	}
 
-  for _, route := range gpxF.Routes {
-    points = append(points, route.Points...)
-  }
+	for _, route := range gpxF.Routes {
+		points = append(points, route.Points...)
+	}
 
-  w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-  err = json.NewEncoder(w).Encode(points)
-	if err!= nil {
+	err = json.NewEncoder(w).Encode(points)
+	if err != nil {
 		panic(err)
 	}
 }
 
 func viewTracks(w http.ResponseWriter, _ *http.Request) {
-
 
 	t, err := template.ParseFiles("ui/html/base.html", "ui/html/track/track.html")
 	if err != nil {

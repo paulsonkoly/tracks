@@ -2,9 +2,16 @@ module github.com/paulsonkoly/tracks
 
 go 1.23.2
 
-require github.com/tkrajina/gpxgo v1.4.0
+require (
+	github.com/jackc/pgx/v5 v5.7.1
+	github.com/justinas/alice v1.2.0
+	github.com/tkrajina/gpxgo v1.4.0
+)
 
 require (
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
-	golang.org/x/text v0.3.6 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 )

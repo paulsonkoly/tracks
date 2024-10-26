@@ -12,6 +12,8 @@ import (
 	"github.com/paulsonkoly/tracks/repository"
 )
 
+const currentUserID = "currentUserID"
+
 type App struct {
 	Logger   *slog.Logger
 	Repo     *repository.Queries
@@ -37,5 +39,20 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 	if err != nil || user.HashedPassword != password {
 		return nil, err
 	}
+
+	a.SM.Put(ctx, currentUserID, user.ID)
 	return &user, nil
+}
+
+func (a *App) ClearCurrentUser(ctx context.Context) {
+	a.SM.Remove(ctx, currentUserID)
+}
+
+func (a *App) CurrentUser(ctx context.Context) *repository.User {
+	currentUser, ok := ctx.Value(CurrentUser).(repository.User)
+	if !ok {
+		return nil
+	}
+
+	return &currentUser
 }

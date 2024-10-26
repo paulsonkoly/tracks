@@ -6,18 +6,16 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/paulsonkoly/tracks/repository"
+	"github.com/paulsonkoly/tracks/app/template"
 )
 
-const currentUserID = "currentUserID"
+func (h *Handler) ViewUserLogin(w http.ResponseWriter, _ *http.Request) {
+	app := h.app
 
-func (h * Handler)ViewUserLogin(w http.ResponseWriter, _ *http.Request) {
-  app := h.app
-
-  err := app.Template.Render(w, "user/login.html", nil)
+	err := app.Template.Render(w, "user/login.html", template.Data{})
 	if err != nil {
-    app.ServerError(w, "template error", err)
-    return
+		app.ServerError(w, "template error", err)
+		return
 	}
 }
 
@@ -42,7 +40,6 @@ func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	app.Logger.Info("user login", slog.String("username", user.Username), slog.Int("id", int(user.ID)))
 
-	app.SM.Put(r.Context(), currentUserID, user.ID)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -54,13 +51,8 @@ func (h *Handler) PostUserLogout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.SM.Remove(r.Context(), currentUserID)
+	app.ClearCurrentUser(r.Context())
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-type TemplateDataUsers struct {
-	CurrentUser *repository.User
-	Users       []repository.User
 }
 
 func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
@@ -71,53 +63,31 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	td := TemplateDataUsers{}
+	td := template.Data{}
 
-	if app.SM.Exists(r.Context(), currentUserID) {
-		uid := app.SM.GetInt32(r.Context(), currentUserID)
+	user := app.CurrentUser(r.Context())
 
-		user, err := app.Repo.GetUser(r.Context(), uid)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-      app.ServerError(w, "render error", err)
-			return
-		}
-
-		td.CurrentUser = &user
-	}
-
+	td.CurrentUser = user
 	td.Users = users
 
-  err = app.Template.Render(w, "user/users.html", td)
+	err = app.Template.Render(w, "user/users.html", td)
 	if err != nil {
-    app.ServerError(w, "render error", err)
+		app.ServerError(w, "render error", err)
 		return
 	}
 }
 
-type TemplateDataUser struct {
-	CurrentUser *repository.User
-}
-
 func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 	app := h.app
-	td := TemplateDataUser{}
+	td := template.Data{}
 
-	if app.SM.Exists(r.Context(), currentUserID) {
-		uid := app.SM.GetInt32(r.Context(), currentUserID)
+	user := app.CurrentUser(r.Context())
 
-		user, err := app.Repo.GetUser(r.Context(), uid)
-		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			app.Logger.Error("current user", "error", err)
-			http.Error(w, "user error", http.StatusInternalServerError)
-			return
-		}
-
-		td.CurrentUser = &user
-	}
+	td.CurrentUser = user
 
   err := app.Template.Render(w, "user/new.html", td)
 	if err != nil {
-    app.ServerError(w, "render error", err)
+		app.ServerError(w, "render error", err)
 		return
 	}
 }

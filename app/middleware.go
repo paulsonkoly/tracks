@@ -1,14 +1,21 @@
 package app
 
 import (
+	"context"
+	"database/sql"
+	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/justinas/alice"
 )
 
+type ContextKey string
+
+var CurrentUser = ContextKey("CurrentUser")
+
 func (a *App) StandardChain() alice.Chain {
-	return alice.New(a.Recover, a.SM.LoadAndSave, a.LogRequest, a.Headers)
+	return alice.New(a.Recover, a.Dynamic, a.LogRequest, a.Headers)
 }
 
 func (a *App) Headers(next http.Handler) http.Handler {
@@ -34,6 +41,29 @@ func (a *App) LogRequest(next http.Handler) http.Handler {
 	})
 }
 
+func (a *App) Dynamic(next http.Handler) http.Handler {
+	return alice.New(a.SM.LoadAndSave).ThenFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		if a.SM.Exists(ctx, currentUserID) {
+			uid := a.SM.GetInt32(ctx, currentUserID)
+
+			user, err := a.Repo.GetUser(ctx, uid)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+					a.ServerError(w, "current user", err)
+					return
+      }
+
+      if err == nil {
+        ctx = context.WithValue(ctx, CurrentUser, user)
+        r = r.WithContext(ctx)
+      }
+    }
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (a *App) Recover(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -46,4 +76,3 @@ func (a *App) Recover(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-

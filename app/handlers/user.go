@@ -6,7 +6,10 @@ import (
 	"log/slog"
 	"net/http"
 
+	fdecoder "github.com/go-playground/form/v4"
+	"github.com/paulsonkoly/tracks/app/form"
 	"github.com/paulsonkoly/tracks/app/template"
+	"github.com/paulsonkoly/tracks/repository"
 )
 
 func (h *Handler) ViewUserLogin(w http.ResponseWriter, _ *http.Request) {
@@ -80,14 +83,65 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 	td := template.Data{}
+	newUserForm := form.NewUserForm{}
 
 	user := app.CurrentUser(r.Context())
 
 	td.CurrentUser = user
+	td.Form = newUserForm
 
-  err := app.Template.Render(w, "user/new.html", td)
+	err := app.Template.Render(w, "user/new.html", td)
 	if err != nil {
 		app.ServerError(w, "render error", err)
 		return
 	}
+}
+
+func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
+	app := h.app
+
+	newUserForm := form.NewUserForm{}
+
+	decoder := fdecoder.NewDecoder()
+	err := r.ParseForm()
+	if err != nil {
+		// client
+		app.ServerError(w, "parse form error", err)
+		return
+	}
+
+	err = decoder.Decode(&newUserForm, r.PostForm)
+	if err != nil {
+		// client
+		app.ServerError(w, "parse form error", err)
+		return
+	}
+
+	newUserForm.Validate(r.Context(), app.Repo)
+
+	if !newUserForm.Valid() {
+		// if any errors
+		td := template.Data{}
+
+		user := app.CurrentUser(r.Context())
+		td.CurrentUser = user
+
+		td.Form = newUserForm
+
+		err = app.Template.Render(w, "user/new.html", td)
+		if err != nil {
+			app.ServerError(w, "render error", err)
+			return
+		}
+
+		return
+	}
+
+	_, err = app.Repo.InsertUser(r.Context(), repository.InsertUserParams{Username: newUserForm.Username, HashedPassword: newUserForm.Password})
+	if err != nil {
+		app.ServerError(w, "render error", err)
+		return
+	}
+
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }

@@ -4,26 +4,51 @@
   <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
     <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Create New User</h2>
 
-    <form action="/create-user" method="POST">
+    {{with .Form}}
+    <form action="/user/new" method="POST">
+      <!-- Global Form Error Message -->
+      {{with .Errors}}
+      <div id="globalError" class="bg-red-100 text-red-700 border border-red-500 p-3 rounded-md mb-4 text-sm">
+        {{range .}}
+        <p>{{.}}</p>
+        {{end}}
+      </div>
+      {{end}}
+
       <!-- Username Field -->
       <div class="mb-4">
-        <label for="username" class="block text-gray-700 text-sm font-medium mb-2">Username</label>
-        <input type="text" id="username" name="username" required
-          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <label for="Username" class="block text-gray-700 text-sm font-medium mb-2">Username</label>
+        <input type="text" id="Username" name="Username" required
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{.Username}}">
+        {{with .FieldErrors.Username}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="usernameError">{{.}}</p>
+        {{end}}
+        {{end}}
       </div>
 
       <!-- Password Field -->
       <div class="mb-4">
-        <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
-        <input type="password" id="password" name="password" required
+        <label for="Password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+        <input type="password" id="Password" name="Password" required
           class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{with .FieldErrors.Password}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="passwordError">{{.}}</p>
+        {{end}}
+        {{end}}
       </div>
 
       <!-- Confirm Password Field -->
       <div class="mb-6">
-        <label for="confirm-password" class="block text-gray-700 text-sm font-medium mb-2">Confirm Password</label>
-        <input type="password" id="confirm-password" name="confirm_password" required
+        <label for="PasswordConfirm" class="block text-gray-700 text-sm font-medium mb-2">Confirm Password</label>
+        <input type="password" id="PasswordConfirm" name="PasswordConfirm" required
           class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{with .FieldErrors.PasswordConfirm}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="passwordConfirmError">{{.}}</p>
+        {{end}}
+        {{end}}
       </div>
 
       <!-- Submit Button -->
@@ -32,6 +57,7 @@
         Create User
       </button>
     </form>
+    {{end}}
   </div>
 </div>
 {{end}}

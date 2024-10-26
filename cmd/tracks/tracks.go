@@ -14,9 +14,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/handlers"
+	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
-	"github.com/paulsonkoly/tracks/app/template"
 )
 
 func main() {
@@ -31,15 +31,15 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = postgresstore.New(db)
 
-  repo := repository.New(db)
+	repo := repository.New(db)
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
-  tmpl := template.New()
+	tmpl := template.New()
 
 	app := app.New(logger, repo, sessionManager, tmpl)
 
-  handlers := handlers.New(app)
+	handlers := handlers.New(app)
 
 	mux := http.NewServeMux()
 
@@ -48,7 +48,7 @@ func main() {
 
 	mux.HandleFunc("GET /users", handlers.ViewUsers)
 	mux.HandleFunc("GET /user/new", handlers.NewUser)
-	// mux.HandleFunc("POST /user/new", handlers.PostNewUser)
+	mux.HandleFunc("POST /user/new", handlers.PostNewUser)
 	mux.HandleFunc("GET /user/login", handlers.ViewUserLogin)
 	mux.HandleFunc("POST /user/login", handlers.PostUserLogin)
 	mux.HandleFunc("POST /user/logout", handlers.PostUserLogout)
@@ -106,4 +106,3 @@ func viewTrack(w http.ResponseWriter, _ *http.Request) {
 		panic(err)
 	}
 }
-

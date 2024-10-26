@@ -72,3 +72,24 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 	}
 	return items, nil
 }
+
+const insertUser = `-- name: InsertUser :one
+insert into users (username, hashed_password, created_at) values ($1, $2, Now()) returning id, username, hashed_password, created_at
+`
+
+type InsertUserParams struct {
+	Username       string
+	HashedPassword string
+}
+
+func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, insertUser, arg.Username, arg.HashedPassword)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.HashedPassword,
+		&i.CreatedAt,
+	)
+	return i, err
+}

@@ -44,6 +44,9 @@ func main() {
 	mux.HandleFunc("GET /", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/", viewTrack)
 
+	mux.HandleFunc("GET /users", handlers.ViewUsers)
+	mux.HandleFunc("GET /user/new", handlers.NewUser)
+	// mux.HandleFunc("POST /user/new", handlers.PostNewUser)
 	mux.HandleFunc("GET /user/login", viewUserLogin)
 	mux.HandleFunc("POST /user/login", handlers.PostUserLogin)
 	mux.HandleFunc("POST /user/logout", handlers.PostUserLogout)

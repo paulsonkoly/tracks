@@ -44099,6 +44099,19 @@ async function fetchGPSTrack(map) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  //confirm delete buttons
+  //
+  // Select all delete buttons by form class
+  const deleteForms = document.querySelectorAll('.confirm');
+
+  deleteForms.forEach(form => {
+    form.addEventListener('submit', function (e) {
+      if (!confirm('Are you sure you want to delete this object?')) {
+        e.preventDefault(); // Prevent form submission if not confirmed
+      }
+    });
+  });
+
   const map = new Map({
     target: 'map',
     layers: [

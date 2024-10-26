@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"text/template"
 
 	"github.com/paulsonkoly/tracks/repository"
 )
@@ -31,17 +30,9 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 		td.CurrentUser = &user
 	}
 
-	t, err := template.ParseFiles("ui/html/base.html", "ui/html/partials/navbar.html", "ui/html/track/track.html")
+  err := app.Template.Render(w, "track/track.html", td)
 	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-		return
-	}
-
-	err = t.Execute(w, td)
-	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
+    app.ServerError(w, "render error", err)
 		return
 	}
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"github.com/paulsonkoly/tracks/app/handlers"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
+	"github.com/paulsonkoly/tracks/app/template"
 )
 
 func main() {
@@ -35,7 +35,9 @@ func main() {
 
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
-	app := app.New(logger, repo, sessionManager)
+  tmpl := template.New()
+
+	app := app.New(logger, repo, sessionManager, tmpl)
 
   handlers := handlers.New(app)
 
@@ -47,7 +49,7 @@ func main() {
 	mux.HandleFunc("GET /users", handlers.ViewUsers)
 	mux.HandleFunc("GET /user/new", handlers.NewUser)
 	// mux.HandleFunc("POST /user/new", handlers.PostNewUser)
-	mux.HandleFunc("GET /user/login", viewUserLogin)
+	mux.HandleFunc("GET /user/login", handlers.ViewUserLogin)
 	mux.HandleFunc("POST /user/login", handlers.PostUserLogin)
 	mux.HandleFunc("POST /user/logout", handlers.PostUserLogout)
 
@@ -100,18 +102,6 @@ func viewTrack(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	err = json.NewEncoder(w).Encode(points)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func viewUserLogin(w http.ResponseWriter, _ *http.Request) {
-	t, err := template.ParseFiles("ui/html/base.html", "ui/html/partials/navbar.html", "ui/html/user/login.html")
-	if err != nil {
-		panic(err)
-	}
-
-	err = t.Execute(w, nil)
 	if err != nil {
 		panic(err)
 	}

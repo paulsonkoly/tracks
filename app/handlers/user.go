@@ -5,12 +5,21 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"text/template"
 
 	"github.com/paulsonkoly/tracks/repository"
 )
 
 const currentUserID = "currentUserID"
+
+func (h * Handler)ViewUserLogin(w http.ResponseWriter, _ *http.Request) {
+  app := h.app
+
+  err := app.Template.Render(w, "user/login.html", nil)
+	if err != nil {
+    app.ServerError(w, "template error", err)
+    return
+	}
+}
 
 func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 	app := h.app
@@ -69,8 +78,7 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 
 		user, err := app.Repo.GetUser(r.Context(), uid)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			app.Logger.Error("current user", "error", err)
-			http.Error(w, "user error", http.StatusInternalServerError)
+      app.ServerError(w, "render error", err)
 			return
 		}
 
@@ -79,17 +87,9 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 
 	td.Users = users
 
-	t, err := template.ParseFiles("ui/html/base.html", "ui/html/partials/navbar.html", "ui/html/user/users.html")
+  err = app.Template.Render(w, "user/users.html", td)
 	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-		return
-	}
-
-	err = t.Execute(w, td)
-	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
+    app.ServerError(w, "render error", err)
 		return
 	}
 }
@@ -115,17 +115,9 @@ func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 		td.CurrentUser = &user
 	}
 
-	t, err := template.ParseFiles("ui/html/base.html", "ui/html/partials/navbar.html", "ui/html/user/new.html")
+  err := app.Template.Render(w, "user/new.html", td)
 	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
-		return
-	}
-
-	err = t.Execute(w, td)
-	if err != nil {
-		app.Logger.Error("template err", "error", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
+    app.ServerError(w, "render error", err)
 		return
 	}
 }

@@ -5,16 +5,22 @@
 package repository
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"time"
 )
 
 type SchemaMigration struct {
 	Version string
 }
 
+type Session struct {
+	Token  string
+	Data   []byte
+	Expiry time.Time
+}
+
 type User struct {
 	ID             int32
 	Username       string
 	HashedPassword string
-	CreatedAt      pgtype.Timestamptz
+	CreatedAt      time.Time
 }

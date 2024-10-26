@@ -15,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/handlers"
+	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
@@ -30,8 +31,11 @@ func main() {
 	sessionManager := scs.New()
 	sessionManager.Store = postgresstore.New(db)
 
+  repo := repository.New(db)
+
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	app := app.New(logger, db, sessionManager)
+
+	app := app.New(logger, repo, sessionManager)
 
   handlers := handlers.New(app)
 

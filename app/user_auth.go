@@ -6,15 +6,20 @@ import (
 	"errors"
 
 	"github.com/paulsonkoly/tracks/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*repository.User, error) {
 	user, err := a.Repo.GetUserByName(ctx, name)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
 	}
-	// TODO not hashed
-	if err != nil || user.HashedPassword != password {
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	if err != nil {
 		return nil, err
 	}
 

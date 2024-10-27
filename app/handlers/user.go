@@ -9,6 +9,7 @@ import (
 	fdecoder "github.com/go-playground/form/v4"
 	"github.com/paulsonkoly/tracks/app/form"
 	"github.com/paulsonkoly/tracks/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (h *Handler) ViewUserLogin(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +118,15 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = app.Repo.InsertUser(r.Context(), repository.InsertUserParams{Username: newUserForm.Username, HashedPassword: newUserForm.Password})
+	insert := repository.InsertUserParams{Username: newUserForm.Username}
+	hash, err := bcrypt.GenerateFromPassword([]byte(newUserForm.Password), 12)
+	if err != nil {
+		app.ServerError(w, "bcrypt error", err)
+		return
+	}
+	insert.HashedPassword = string(hash)
+
+	_, err = app.Repo.InsertUser(r.Context(), insert)
 	if err != nil {
 		app.ServerError(w, "render error", err)
 		return

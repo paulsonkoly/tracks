@@ -11,6 +11,7 @@ require (
 	github.com/justinas/nosurf v1.1.1
 	github.com/lib/pq v1.10.9
 	github.com/tkrajina/gpxgo v1.4.0
+	golang.org/x/crypto v0.19.0
 )
 
 require (

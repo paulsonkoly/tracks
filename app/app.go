@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/gob"
 	"log/slog"
 	"net/http"
 
@@ -19,6 +20,7 @@ type App struct {
 }
 
 func New(logger *slog.Logger, repo *repository.Queries, sm *scs.SessionManager, tmpl *template.Template) *App {
+  gob.Register(Flash{})
 	return &App{Logger: logger, Repo: repo, SM: sm, Template: tmpl}
 }
 

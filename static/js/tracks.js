@@ -44112,6 +44112,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // close flash messages
+  //
+  //
+  // Get all elements with data-close attribute
+  const closeButtons = document.querySelectorAll('[data-close]');
+
+  // Add click event to each close button
+  closeButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      // Get the id of the message to close
+      const messageId = button.getAttribute('data-close');
+      const messageElement = document.getElementById(messageId);
+
+      // Hide the message element by adding the hidden class
+      if (messageElement) {
+        messageElement.classList.add('hidden');
+      }
+    });
+  });
+
   const map = new Map({
     target: 'map',
     layers: [

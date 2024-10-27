@@ -80,6 +80,7 @@ func (h *Handler) PostUserLogout(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 	app := h.app
+
 	users, err := app.Repo.GetUsers(r.Context())
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		app.ServerError(w, "get users", err)
@@ -151,6 +152,8 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+  app.FlashInfo(r.Context(), "User created.")
+
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }
 
@@ -169,5 +172,6 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+  app.FlashInfo(r.Context(), "User deleted.")
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }

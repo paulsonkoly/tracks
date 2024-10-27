@@ -87,3 +87,14 @@ func (a *App) Recover(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (a *App)RequiresLogIn(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    if nil == a.CurrentUser(r.Context()) {
+      a.FlashError(r.Context(), "Requires login")
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+			return
+    }
+		next.ServeHTTP(w, r)
+	})
+}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	fdecoder "github.com/go-playground/form/v4"
 	"github.com/paulsonkoly/tracks/app/form"
@@ -127,7 +128,6 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 
 	if !newUserForm.Valid() {
 		// if any errors
-
 		err = app.Render(w, "user/new.html", app.BaseTemplate(r).WithForm(newUserForm))
 		if err != nil {
 			app.ServerError(w, "render error", err)
@@ -148,6 +148,24 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	_, err = app.Repo.InsertUser(r.Context(), insert)
 	if err != nil {
 		app.ServerError(w, "render error", err)
+		return
+	}
+
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
+}
+
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	app := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		app.ServerError(w, "decoding id", err)
+		return
+	}
+
+	err = app.Repo.DeleteUser(r.Context(), int32(id))
+	if err != nil {
+		app.ServerError(w, "deleting user", err)
 		return
 	}
 

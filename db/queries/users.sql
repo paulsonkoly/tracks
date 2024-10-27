@@ -9,3 +9,6 @@ select * from users;
 
 -- name: InsertUser :one
 insert into users (username, hashed_password, created_at) values ($1, $2, Now()) returning *;
+
+-- name: DeleteUser :exec
+delete from users where id = $1;

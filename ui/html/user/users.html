@@ -36,7 +36,8 @@
             <!-- Edit Button -->
             <a href="/user/edit/{{.ID}}" class="text-blue-600 hover:text-blue-900">Edit</a>
             <!-- Delete Button -->
-            <form action="/user/delete/{{.ID}}" method="POST" class="confirm">
+            <form action="/user/{{.ID}}/delete" method="POST" class="confirm">
+              <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
               <button type="submit" class="text-red-600 hover:text-red-900 confirm">Delete</button>
             </form>
           </td>

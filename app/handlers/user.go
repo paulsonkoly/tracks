@@ -7,15 +7,19 @@ import (
 	"net/http"
 
 	fdecoder "github.com/go-playground/form/v4"
+	"github.com/justinas/nosurf"
 	"github.com/paulsonkoly/tracks/app/form"
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 )
 
-func (h *Handler) ViewUserLogin(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) ViewUserLogin(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 
-	err := app.Template.Render(w, "user/login.html", template.Data{})
+	td := template.Data{}
+	td.CSRFToken = nosurf.Token(r)
+
+	err := app.Template.Render(w, "user/login.html", td)
 	if err != nil {
 		app.ServerError(w, "template error", err)
 		return
@@ -72,6 +76,7 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 
 	td.CurrentUser = user
 	td.Users = users
+	td.CSRFToken = nosurf.Token(r)
 
 	err = app.Template.Render(w, "user/users.html", td)
 	if err != nil {
@@ -89,6 +94,7 @@ func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 
 	td.CurrentUser = user
 	td.Form = newUserForm
+	td.CSRFToken = nosurf.Token(r)
 
 	err := app.Template.Render(w, "user/new.html", td)
 	if err != nil {
@@ -125,8 +131,8 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 
 		user := app.CurrentUser(r.Context())
 		td.CurrentUser = user
-
 		td.Form = newUserForm
+		td.CSRFToken = nosurf.Token(r)
 
 		err = app.Template.Render(w, "user/new.html", td)
 		if err != nil {

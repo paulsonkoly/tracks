@@ -69,6 +69,7 @@ type Data struct {
 	CurrentUser *repository.User
 	Users       []repository.User
 	Form        any
+	CSRFToken   string
 }
 
 func (t *Template) Render(w io.Writer, name string, data Data) error {

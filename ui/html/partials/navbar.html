@@ -24,8 +24,7 @@
         {{if .CurrentUser}}
         <!-- Logout Button -->
         <form action="/user/logout" method="POST" class="text-center">
-          <!-- CSRF Token (for security, if applicable) -->
-          <!-- <input type="hidden" name="_token" value="YOUR_CSRF_TOKEN_HERE"> -->
+          <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
 
           <button type="submit"
             class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition">

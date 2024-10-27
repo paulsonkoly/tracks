@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/justinas/alice"
+	"github.com/justinas/nosurf"
 )
 
 type ContextKey string
@@ -15,7 +16,7 @@ type ContextKey string
 var CurrentUser = ContextKey("CurrentUser")
 
 func (a *App) StandardChain() alice.Chain {
-	return alice.New(a.Recover, a.Dynamic, a.LogRequest, a.Headers)
+	return alice.New(a.Recover, a.Dynamic, a.LogRequest, a.Headers, a.NoSurf)
 }
 
 func (a *App) Headers(next http.Handler) http.Handler {
@@ -50,18 +51,28 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 
 			user, err := a.Repo.GetUser(ctx, uid)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
-					a.ServerError(w, "current user", err)
-					return
-      }
+				a.ServerError(w, "current user", err)
+				return
+			}
 
-      if err == nil {
-        ctx = context.WithValue(ctx, CurrentUser, user)
-        r = r.WithContext(ctx)
-      }
-    }
+			if err == nil {
+				ctx = context.WithValue(ctx, CurrentUser, user)
+				r = r.WithContext(ctx)
+			}
+		}
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (a *App) NoSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+	csrfHandler.SetBaseCookie(http.Cookie{
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+	})
+	return csrfHandler
 }
 
 func (a *App) Recover(next http.Handler) http.Handler {

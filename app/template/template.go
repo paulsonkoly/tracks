@@ -1,18 +1,12 @@
 package template
 
 import (
-	"errors"
 	"html/template"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
-
-	"github.com/paulsonkoly/tracks/repository"
 )
-
-var ErrTemplateNotFound = errors.New("template not found")
 
 type Template struct {
 	cache map[string]*template.Template
@@ -65,20 +59,9 @@ func New() *Template {
 	}
 }
 
-type Data struct {
-	CurrentUser *repository.User
-	Users       []repository.User
-	Form        any
-	CSRFToken   string
-}
-
-func (t *Template) Render(w io.Writer, name string, data Data) error {
+func (t Template) Get(name string) (*template.Template, bool) {
 	tmpl, ok := t.cache[name]
-	if !ok {
-		return ErrTemplateNotFound
-	}
-
-	return tmpl.Execute(w, data)
+	return tmpl, ok
 }
 
 func must[T any](value T, err error) T {

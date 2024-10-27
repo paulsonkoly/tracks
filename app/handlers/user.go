@@ -7,19 +7,14 @@ import (
 	"net/http"
 
 	fdecoder "github.com/go-playground/form/v4"
-	"github.com/justinas/nosurf"
 	"github.com/paulsonkoly/tracks/app/form"
-	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 )
 
 func (h *Handler) ViewUserLogin(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 
-	td := template.Data{}
-	td.CSRFToken = nosurf.Token(r)
-
-	err := app.Template.Render(w, "user/login.html", td)
+	err := app.Render(w, "user/login.html", app.BaseTemplate(r))
 	if err != nil {
 		app.ServerError(w, "template error", err)
 		return
@@ -70,15 +65,7 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	td := template.Data{}
-
-	user := app.CurrentUser(r.Context())
-
-	td.CurrentUser = user
-	td.Users = users
-	td.CSRFToken = nosurf.Token(r)
-
-	err = app.Template.Render(w, "user/users.html", td)
+	err = app.Render(w, "user/users.html", app.BaseTemplate(r).WithUsers(users))
 	if err != nil {
 		app.ServerError(w, "render error", err)
 		return
@@ -87,16 +74,9 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 	app := h.app
-	td := template.Data{}
 	newUserForm := form.NewUserForm{}
 
-	user := app.CurrentUser(r.Context())
-
-	td.CurrentUser = user
-	td.Form = newUserForm
-	td.CSRFToken = nosurf.Token(r)
-
-	err := app.Template.Render(w, "user/new.html", td)
+	err := app.Render(w, "user/new.html", app.BaseTemplate(r).WithForm(newUserForm))
 	if err != nil {
 		app.ServerError(w, "render error", err)
 		return
@@ -119,7 +99,7 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&newUserForm, r.PostForm)
 	if err != nil {
 		// client
-		app.ServerError(w, "parse form error", err)
+		app.ServerError(w, "decode form error", err)
 		return
 	}
 
@@ -127,14 +107,8 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 
 	if !newUserForm.Valid() {
 		// if any errors
-		td := template.Data{}
 
-		user := app.CurrentUser(r.Context())
-		td.CurrentUser = user
-		td.Form = newUserForm
-		td.CSRFToken = nosurf.Token(r)
-
-		err = app.Template.Render(w, "user/new.html", td)
+		err = app.Render(w, "user/new.html", app.BaseTemplate(r).WithForm(newUserForm))
 		if err != nil {
 			app.ServerError(w, "render error", err)
 			return

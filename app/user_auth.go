@@ -20,15 +20,27 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
 	if err != nil {
+    if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+      return nil, nil
+    }
 		return nil, err
 	}
 
 	a.SM.Put(ctx, currentUserID, user.ID)
+
+	if err := a.SM.RenewToken(ctx); err != nil {
+    a.Logger.Error("session renew token", "error", err.Error())
+	}
+
 	return &user, nil
 }
 
 func (a *App) ClearCurrentUser(ctx context.Context) {
 	a.SM.Remove(ctx, currentUserID)
+
+	if err := a.SM.RenewToken(ctx); err != nil {
+    a.Logger.Error("session renew token", "error", err.Error())
+	}
 }
 
 func (a *App) CurrentUser(ctx context.Context) *repository.User {

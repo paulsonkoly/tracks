@@ -15,7 +15,9 @@ import (
 func (h *Handler) ViewUserLogin(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 
-	err := app.Render(w, "user/login.html", app.BaseTemplate(r))
+	loginForm := form.LoginForm{}
+
+	err := app.Render(w, "user/login.html", app.BaseTemplate(r).WithForm(loginForm))
 	if err != nil {
 		app.ServerError(w, "template error", err)
 		return
@@ -25,34 +27,51 @@ func (h *Handler) ViewUserLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 
-	if err := app.SM.RenewToken(r.Context()); err != nil {
-		app.ServerError(w, "session renew token", err)
+	loginForm := form.LoginForm{}
+
+	decoder := fdecoder.NewDecoder()
+	err := r.ParseForm()
+	if err != nil {
+		// client
+		app.ServerError(w, "parse form error", err)
 		return
 	}
 
-	user, err := app.AuthenticateUser(r.Context(), "Paul", "123456")
+	err = decoder.Decode(&loginForm, r.PostForm)
 	if err != nil {
-		app.ServerError(w, "authenticate user", err)
+		// client
+		app.ServerError(w, "decode form error", err)
+		return
+	}
+
+	user, err := app.AuthenticateUser(r.Context(), loginForm.Username, loginForm.Password)
+	if err != nil {
+		app.ServerError(w, "authenticate user error", err)
 		return
 	}
 
 	if user == nil {
-		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		loginForm.AddError("Invalid credentials.")
+		// remove data to prevent form filling in fields from previous submit
+		loginForm.Username = ""
+		loginForm.Password = ""
+
+		err = app.Render(w, "user/login.html", app.BaseTemplate(r).WithForm(loginForm))
+		if err != nil {
+			app.ServerError(w, "render error", err)
+			return
+		}
+
 		return
 	}
 
+	// succesfull login
 	app.Logger.Info("user login", slog.String("username", user.Username), slog.Int("id", int(user.ID)))
-
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h *Handler) PostUserLogout(w http.ResponseWriter, r *http.Request) {
 	app := h.app
-
-	if err := app.SM.RenewToken(r.Context()); err != nil {
-		app.ServerError(w, "session renew token", err)
-		return
-	}
 
 	app.ClearCurrentUser(r.Context())
 	http.Redirect(w, r, "/", http.StatusSeeOther)

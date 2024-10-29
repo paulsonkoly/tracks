@@ -13,7 +13,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
-	"github.com/paulsonkoly/tracks/app/handlers"
+	"github.com/paulsonkoly/tracks/app/handler"
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
@@ -39,7 +39,7 @@ func main() {
 
 	app := app.New(logger, repo, sessionManager, tmpl)
 
-	handlers := handlers.New(app)
+	handlers := handler.New(app)
 
 	mux := http.NewServeMux()
 

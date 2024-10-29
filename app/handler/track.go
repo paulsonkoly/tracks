@@ -1,14 +1,8 @@
-package handlers
+package handler
 
 import (
 	"net/http"
-
-	"github.com/paulsonkoly/tracks/repository"
 )
-
-type TemplateData struct {
-	CurrentUser *repository.User
-}
 
 func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	a := h.app

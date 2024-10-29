@@ -49,6 +49,8 @@ func main() {
 	mux.Handle("GET /users", app.RequiresLogIn(http.HandlerFunc(handlers.ViewUsers)))
 	mux.Handle("GET /user/new", app.RequiresLogIn(http.HandlerFunc(handlers.NewUser)))
 	mux.Handle("POST /user/new", app.RequiresLogIn(http.HandlerFunc(handlers.PostNewUser)))
+	mux.Handle("GET /user/{id}/edit", app.RequiresLogIn(http.HandlerFunc(handlers.EditUser)))
+	mux.Handle("POST /user/{id}/edit", app.RequiresLogIn(http.HandlerFunc(handlers.PostEditUser)))
 	mux.Handle("POST /user/{id}/delete", app.RequiresLogIn(http.HandlerFunc(handlers.DeleteUser)))
 	mux.HandleFunc("GET /user/login", handlers.ViewUserLogin)
 	mux.HandleFunc("POST /user/login", handlers.PostUserLogin)

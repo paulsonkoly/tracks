@@ -34,7 +34,7 @@
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-4">
             <!-- Edit Button -->
-            <a href="/user/edit/{{.ID}}" class="text-blue-600 hover:text-blue-900">Edit</a>
+            <a href="/user/{{.ID}}/edit" class="text-blue-600 hover:text-blue-900">Edit</a>
             <!-- Delete Button -->
             <form action="/user/{{.ID}}/delete" method="POST" class="confirm">
               <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">

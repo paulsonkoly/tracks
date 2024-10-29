@@ -102,3 +102,18 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 	)
 	return i, err
 }
+
+const updateUser = `-- name: UpdateUser :exec
+update users set username = $1, hashed_password = $2 where id = $3
+`
+
+type UpdateUserParams struct {
+	Username       string
+	HashedPassword string
+	ID             int32
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser, arg.Username, arg.HashedPassword, arg.ID)
+	return err
+}

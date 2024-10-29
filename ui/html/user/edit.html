@@ -1,0 +1,66 @@
+{{define "content"}}
+<div class="flex justify-center items-center min-h-screen bg-gray-100">
+  <!-- New User Form Container -->
+  <div class="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-2xl font-semibold text-gray-800 text-center mb-6">Edit User</h2>
+    <form action="/user/{{.Form.ID}}/edit" method="POST">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+      {{with .Form}}
+      <!-- Global Form Error Message -->
+      {{with .Errors}}
+      <div id="globalError" class="bg-red-100 text-red-700 border border-red-500 p-3 rounded-md mb-4 text-sm">
+        {{range .}}
+        <p>{{.}}</p>
+        {{end}}
+      </div>
+      {{end}}
+
+      <!-- Username Field -->
+      <div class="mb-4">
+        <label for="Username" class="block text-gray-700 text-sm font-medium mb-2">Username</label>
+        <input type="text" id="Username" name="Username"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value="{{.Username}}">
+        {{with .FieldErrors.Username}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="usernameError">{{.}}</p>
+        {{end}}
+        {{end}}
+      </div>
+
+      <!-- Password Field -->
+      <div class="mb-4">
+        <label for="Password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+        <input type="password" id="Password" name="Password"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{with .FieldErrors.Password}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="passwordError">{{.}}</p>
+        {{end}}
+        {{end}}
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="mb-6">
+        <label for="PasswordConfirm" class="block text-gray-700 text-sm font-medium mb-2">Confirm Password</label>
+        <input type="password" id="PasswordConfirm" name="PasswordConfirm"
+          class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{with .FieldErrors.PasswordConfirm}}
+        {{range .}}
+        <p class="text-red-500 text-xs mt-2" id="passwordConfirmError">{{.}}</p>
+        {{end}}
+        {{end}}
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit"
+        class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition">
+        Update User
+      </button>
+      {{end}}
+    </form>
+
+  </div>
+</div>
+{{end}}

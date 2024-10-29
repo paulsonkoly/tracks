@@ -47,6 +47,9 @@ func (r renderData) WithForm(form any) renderData {
 	return r
 }
 
+// Render renders the template from ui/html/<resource>/page.html. name is the
+// path name with ui/html/ removed. renderData can be obtained by calling
+// BaseTemplate().
 func (a *App) Render(w io.Writer, name string, data renderData) error {
 	tmpl, ok := a.Template.Get(name)
 	if !ok {

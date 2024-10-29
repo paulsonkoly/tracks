@@ -96,7 +96,7 @@ func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 	app := h.app
-	newUserForm := form.NewUserForm{}
+	newUserForm := form.User{}
 
 	err := app.Render(w, "user/new.html", app.BaseTemplate(r).WithForm(newUserForm))
 	if err != nil {
@@ -108,7 +108,7 @@ func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	app := h.app
 
-	newUserForm := form.NewUserForm{}
+	newUserForm := form.User{}
 
 	decoder := fdecoder.NewDecoder()
 	err := r.ParseForm()
@@ -152,8 +152,105 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  app.FlashInfo(r.Context(), "User created.")
+	app.FlashInfo(r.Context(), "User created.")
+	http.Redirect(w, r, "/users", http.StatusSeeOther)
+}
 
+func (h *Handler) EditUser(w http.ResponseWriter, r *http.Request) {
+	app := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		app.ServerError(w, "decoding id", err)
+		return
+	}
+
+	dbUser, err := app.Repo.GetUser(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
+		} else {
+			app.ServerError(w, "getting user", err)
+		}
+		return
+	}
+
+	form := form.User{Username: dbUser.Username, ID: id}
+
+	err = app.Render(w, "user/edit.html", app.BaseTemplate(r).WithForm(form))
+	if err != nil {
+		app.ServerError(w, "rendering template", err)
+		return
+	}
+}
+
+func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
+	app := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		app.ServerError(w, "decoding id", err)
+		return
+	}
+
+	form := form.User{}
+
+	decoder := fdecoder.NewDecoder()
+	err = r.ParseForm()
+	if err != nil {
+		// client
+		app.ServerError(w, "parse form error", err)
+		return
+	}
+
+	err = decoder.Decode(&form, r.PostForm)
+	if err != nil {
+		// client
+		app.ServerError(w, "decode form error", err)
+		return
+	}
+
+	form.ValidateEdit()
+
+	dbUser, err := app.Repo.GetUser(r.Context(), int32(id))
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
+		} else {
+			app.ServerError(w, "getting user", err)
+		}
+		return
+	}
+	form.ID = id
+
+	if !form.Valid() {
+		err = app.Render(w, "user/edit.html", app.BaseTemplate(r).WithForm(form))
+		if err != nil {
+			app.ServerError(w, "render error", err)
+		}
+		return
+	}
+
+	upd := repository.UpdateUserParams{Username: dbUser.Username, HashedPassword: dbUser.HashedPassword, ID: int32(id)}
+	if form.Username != "" {
+		upd.Username = form.Username
+	}
+	if form.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), 12)
+		if err != nil {
+			app.ServerError(w, "generate hash from password", err)
+			return
+		}
+		upd.HashedPassword = string(hash)
+	}
+
+	err = app.Repo.UpdateUser(r.Context(), upd)
+	if err != nil {
+		app.ServerError(w, "updating user", err)
+		return
+	}
+
+	app.FlashInfo(r.Context(), "User updated.")
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }
 
@@ -172,6 +269,6 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  app.FlashInfo(r.Context(), "User deleted.")
+	app.FlashInfo(r.Context(), "User deleted.")
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }

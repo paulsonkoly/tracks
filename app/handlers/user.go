@@ -64,7 +64,7 @@ func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// succesfull login
-	a.Logger.Info("user login", slog.String("username", user.Username), slog.Int("id", int(user.ID)))
+	a.LogAction(r.Context(), "user login", slog.Int("id", int(user.ID)))
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -77,6 +77,8 @@ func (h *Handler) PostUserLogout(w http.ResponseWriter, r *http.Request) {
 		a.ServerError(w, err)
 		return
 	}
+
+	a.LogAction(r.Context(), "user logout")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -127,9 +129,7 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUserForm.Validate(r.Context(), a.Repo)
-
-	if !newUserForm.Valid() {
+	if !newUserForm.Validate(r.Context(), a.Repo) {
 		// if any errors
 		err = a.Render(w, "user/new.html", a.BaseTemplate(r).WithForm(newUserForm))
 		if err != nil {
@@ -155,6 +155,7 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.FlashInfo(r.Context(), "User created.")
+	a.LogAction(r.Context(), "user created", slog.String("username", insert.Username))
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }
 
@@ -212,8 +213,6 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	form.ValidateEdit()
-
 	dbUser, err := a.Repo.GetUser(r.Context(), int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -225,7 +224,7 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 	}
 	form.ID = id
 
-	if !form.Valid() {
+	if !form.ValidateEdit() {
 		err = a.Render(w, "user/edit.html", a.BaseTemplate(r).WithForm(form))
 		if err != nil {
 			a.ServerError(w, err)
@@ -253,25 +252,27 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.FlashInfo(r.Context(), "User updated.")
+	a.LogAction(r.Context(), "user updated", slog.String("username", upd.Username), slog.Int("id", id))
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }
 
 // DeleteUser deletes a user.
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	app := h.app
+	a := h.app
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		app.ClientError(w, err, http.StatusBadRequest)
+		a.ClientError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	err = app.Repo.DeleteUser(r.Context(), int32(id))
+	err = a.Repo.DeleteUser(r.Context(), int32(id))
 	if err != nil {
-		app.ServerError(w, err)
+		a.ServerError(w, err)
 		return
 	}
 
-	app.FlashInfo(r.Context(), "User deleted.")
+	a.FlashInfo(r.Context(), "User deleted.")
+	a.LogAction(r.Context(), "user deleted", slog.Int("id", id))
 	http.Redirect(w, r, "/users", http.StatusSeeOther)
 }

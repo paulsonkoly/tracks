@@ -5,7 +5,7 @@ type errors struct {
 	Errors      []string            `form:"-"`
 }
 
-func (f errors) Valid() bool {
+func (f errors) valid() bool {
 	return len(f.FieldErrors) == 0 && len(f.Errors) == 0
 }
 

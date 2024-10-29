@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/gob"
 	"log/slog"
 	"net/http"
@@ -32,4 +33,12 @@ func (a *App) ServerError(w http.ResponseWriter, err error) {
 func (a *App) ClientError(w http.ResponseWriter, err error, status int) {
 	a.Logger.Debug("client error", "error", err.Error(), "status", status)
 	http.Error(w, http.StatusText(status), status)
+}
+
+func (a *App) LogAction(ctx context.Context, action string, args ...any) {
+	user := a.CurrentUser(ctx)
+	if user != nil {
+		args = append(args, slog.Int("actor id", int(user.ID)))
+	}
+	a.Logger.Info(action, args...)
 }

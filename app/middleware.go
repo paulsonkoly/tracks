@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/justinas/alice"
 	"github.com/justinas/nosurf"
@@ -80,7 +81,7 @@ func (a *App) Recover(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
-				a.Logger.Error("panic", "error", err)
+				a.Logger.Error("panic", "error", err, "stack", debug.Stack())
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
 		}()

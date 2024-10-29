@@ -17,7 +17,7 @@ type User struct {
 	errors
 }
 
-func (f *User) Validate(ctx context.Context, repo *repository.Queries) {
+func (f *User) Validate(ctx context.Context, repo *repository.Queries) bool {
 	f.validateUsername()
 	f.validatePassword()
 
@@ -25,9 +25,11 @@ func (f *User) Validate(ctx context.Context, repo *repository.Queries) {
 	if !errs.Is(err, sql.ErrNoRows) {
 		f.AddError("User already exists.")
 	}
+
+	return f.valid()
 }
 
-func (f *User) ValidateEdit() {
+func (f *User) ValidateEdit() bool {
 	if f.Username != "" {
 		f.validateUsername()
 	}
@@ -35,6 +37,8 @@ func (f *User) ValidateEdit() {
 	if f.Password != "" || f.PasswordConfirm != "" {
 		f.validatePassword()
 	}
+
+	return f.valid()
 }
 
 func (f *User) validateUsername() {

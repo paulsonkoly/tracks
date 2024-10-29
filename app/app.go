@@ -20,12 +20,16 @@ type App struct {
 }
 
 func New(logger *slog.Logger, repo *repository.Queries, sm *scs.SessionManager, tmpl *template.Template) *App {
-  gob.Register(Flash{})
+	gob.Register(Flash{})
 	return &App{Logger: logger, Repo: repo, SM: sm, Template: tmpl}
 }
 
-func (a *App) ServerError(w http.ResponseWriter, msg string, err error) {
-	a.Logger.Error(msg, "error", err.Error())
+func (a *App) ServerError(w http.ResponseWriter, err error) {
+	a.Logger.Error("server error", "error", err.Error())
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
+func (a *App) ClientError(w http.ResponseWriter, err error, status int) {
+	a.Logger.Debug("client error", "error", err.Error(), "status", status)
+	http.Error(w, http.StatusText(status), status)
+}

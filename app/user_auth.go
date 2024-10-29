@@ -9,38 +9,40 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var ErrAuthenticationFailed = errors.New("authentication failed")
+
 func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*repository.User, error) {
 	user, err := a.Repo.GetUserByName(ctx, name)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
-		}
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrAuthenticationFailed
+	} else if err != nil {
 		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
-	if err != nil {
-    if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-      return nil, nil
-    }
+	if err != nil && errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		return nil, ErrAuthenticationFailed
+	} else if err != nil {
 		return nil, err
 	}
 
 	a.SM.Put(ctx, currentUserID, user.ID)
 
 	if err := a.SM.RenewToken(ctx); err != nil {
-    a.Logger.Error("session renew token", "error", err.Error())
+		return nil, err
 	}
 
 	return &user, nil
 }
 
-func (a *App) ClearCurrentUser(ctx context.Context) {
+func (a *App) ClearCurrentUser(ctx context.Context) error {
 	a.SM.Remove(ctx, currentUserID)
 
 	if err := a.SM.RenewToken(ctx); err != nil {
-    a.Logger.Error("session renew token", "error", err.Error())
+		return err
 	}
+
+	return nil
 }
 
 func (a *App) CurrentUser(ctx context.Context) *repository.User {

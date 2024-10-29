@@ -20,7 +20,7 @@ func New() *Template {
 		basePath     = "ui/html/base.html"
 		partialsPath = "ui/html/partials/"
 
-		partials []string
+		partials = []string{}
 	)
 
 	// load partials for all templates

@@ -1,6 +1,6 @@
 package form
 
-type LoginForm struct {
+type Login struct {
 	Username string
 	Password string
 	errors

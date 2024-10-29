@@ -14,7 +14,7 @@ var ErrTemplateNotFound = errors.New("template not found")
 type renderData struct {
 	Users       []repository.User
 	Form        any
-  Flash       Flash
+	Flash       Flash
 	CurrentUser *repository.User
 	CSRFToken   string
 }
@@ -30,9 +30,9 @@ func (a *App) BaseTemplate(r *http.Request) renderData {
 
 	td.CurrentUser = user
 	td.CSRFToken = nosurf.Token(r)
-  if flash, ok := a.SM.Pop(r.Context(), "flash").(Flash); ok {
-    td.Flash = flash
-  }
+	if flash, ok := a.SM.Pop(r.Context(), "flash").(Flash); ok {
+		td.Flash = flash
+	}
 
 	return td
 }

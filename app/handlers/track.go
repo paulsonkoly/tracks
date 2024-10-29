@@ -11,11 +11,11 @@ type TemplateData struct {
 }
 
 func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
-	app := h.app
+	a := h.app
 
-  err := app.Render(w, "track/track.html", app.BaseTemplate(r))
+	err := a.Render(w, "track/track.html", a.BaseTemplate(r))
 	if err != nil {
-    app.ServerError(w, "render error", err)
+		a.ServerError(w, err)
 		return
 	}
 }

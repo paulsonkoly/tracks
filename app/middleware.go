@@ -51,7 +51,7 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 
 			user, err := a.Repo.GetUser(ctx, uid)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
-				a.ServerError(w, "current user", err)
+				a.ServerError(w, err)
 				return
 			}
 
@@ -88,13 +88,13 @@ func (a *App) Recover(next http.Handler) http.Handler {
 	})
 }
 
-func (a *App)RequiresLogIn(next http.Handler) http.Handler {
+func (a *App) RequiresLogIn(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    if nil == a.CurrentUser(r.Context()) {
-      a.FlashError(r.Context(), "Requires login")
+		if nil == a.CurrentUser(r.Context()) {
+			a.FlashError(r.Context(), "Requires login")
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
-    }
+		}
 		next.ServeHTTP(w, r)
 	})
 }

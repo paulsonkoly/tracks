@@ -8,11 +8,11 @@ import (
 	"strings"
 )
 
-type Template struct {
+type Cache struct {
 	cache map[string]*template.Template
 }
 
-func New() *Template {
+func NewCache() *Cache {
 	cache := make(map[string]*template.Template)
 
 	var (
@@ -54,12 +54,12 @@ func New() *Template {
 		}
 	}
 
-	return &Template{
+	return &Cache{
 		cache: cache,
 	}
 }
 
-func (t Template) Get(name string) (*template.Template, bool) {
+func (t Cache) Get(name string) (*template.Template, bool) {
 	tmpl, ok := t.cache[name]
 	return tmpl, ok
 }

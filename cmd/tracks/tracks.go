@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"os"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/handler"
+	"github.com/paulsonkoly/tracks/app/log/slog"
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
@@ -33,11 +33,9 @@ func main() {
 
 	repo := repository.New(db)
 
-	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	tmpl := template.NewCache()
 
-	tmpl := template.New()
-
-	app := app.New(logger, repo, sessionManager, tmpl)
+	app := app.New(slog.New(), repo, sessionManager, tmpl)
 
 	handlers := handler.New(app)
 

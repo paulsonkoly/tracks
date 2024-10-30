@@ -11,6 +11,8 @@ import (
 
 var ErrAuthenticationFailed = errors.New("authentication failed")
 
+const currentUserID = "currentUserID"
+
 func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*repository.User, error) {
 	user, err := a.Repo.GetUserByName(ctx, name)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {

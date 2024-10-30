@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log/slog"
 	"net/http"
-	"runtime/debug"
 
 	"github.com/justinas/alice"
 	"github.com/justinas/nosurf"
@@ -38,7 +36,7 @@ func (a *App) Headers(next http.Handler) http.Handler {
 
 func (a *App) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		a.Logger.Info("request", slog.String("method", r.Method), slog.String("url", r.URL.Path), slog.String("remote", r.RemoteAddr))
+		a.logger.Info("request", "method", r.Method, "url", r.URL.Path, "remote", r.RemoteAddr)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -81,7 +79,7 @@ func (a *App) Recover(next http.Handler) http.Handler {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
-				a.Logger.Error("panic", "error", err, "stack", debug.Stack())
+				a.logger.Panic(err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			}
 		}()

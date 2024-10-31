@@ -5,8 +5,7 @@ import "context"
 type Flash = map[string][]string
 
 func (a *App) flash(ctx context.Context, typ string, msg string) {
-	sm := a.SM
-	flash, ok := sm.Get(ctx, "flash").(Flash)
+	flash, ok := a.sm.Get(ctx, flashKey).(Flash)
 	if !ok {
 		flash = make(Flash)
 	}
@@ -17,7 +16,7 @@ func (a *App) flash(ctx context.Context, typ string, msg string) {
 	msgs = append(msgs, msg)
 
 	flash[typ] = msgs
-	sm.Put(ctx, "flash", flash)
+	a.sm.Put(ctx, flashKey, flash)
 }
 
 func (a *App) FlashInfo(ctx context.Context, msg string) {

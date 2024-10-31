@@ -8,12 +8,11 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/alexedwards/scs/postgresstore"
-	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/handler"
 	"github.com/paulsonkoly/tracks/app/log/slog"
+	"github.com/paulsonkoly/tracks/app/session_manager/scs"
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
@@ -28,14 +27,11 @@ func main() {
 	db := openDB()
 	defer db.Close()
 
-	sessionManager := scs.New()
-	sessionManager.Store = postgresstore.New(db)
-
 	repo := repository.New(db)
 
 	tmpl := template.NewCache()
 
-	app := app.New(slog.New(), repo, sessionManager, tmpl)
+	app := app.New(slog.New(), repo, scs.New(db), tmpl)
 
 	handlers := handler.New(app)
 

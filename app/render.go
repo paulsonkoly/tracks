@@ -11,6 +11,8 @@ import (
 
 var ErrTemplateNotFound = errors.New("template not found")
 
+var flashKey = "flash"
+
 type renderData struct {
 	Users       []repository.User
 	Form        any
@@ -30,7 +32,7 @@ func (a *App) BaseTemplate(r *http.Request) renderData {
 
 	td.CurrentUser = user
 	td.CSRFToken = nosurf.Token(r)
-	if flash, ok := a.SM.Pop(r.Context(), "flash").(Flash); ok {
+	if flash, ok := a.sm.Pop(r.Context(), flashKey).(Flash); ok {
 		td.Flash = flash
 	}
 

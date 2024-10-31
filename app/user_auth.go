@@ -28,9 +28,9 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 		return nil, err
 	}
 
-	a.SM.Put(ctx, currentUserID, user.ID)
+	a.sm.Put(ctx, currentUserID, user.ID)
 
-	if err := a.SM.RenewToken(ctx); err != nil {
+	if err := a.sm.RenewToken(ctx); err != nil {
 		return nil, err
 	}
 
@@ -38,9 +38,9 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 }
 
 func (a *App) ClearCurrentUser(ctx context.Context) error {
-	a.SM.Remove(ctx, currentUserID)
+	a.sm.Remove(ctx, currentUserID)
 
-	if err := a.SM.RenewToken(ctx); err != nil {
+	if err := a.sm.RenewToken(ctx); err != nil {
 		return err
 	}
 

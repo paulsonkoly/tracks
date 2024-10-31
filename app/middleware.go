@@ -42,12 +42,10 @@ func (a *App) LogRequest(next http.Handler) http.Handler {
 }
 
 func (a *App) Dynamic(next http.Handler) http.Handler {
-	return alice.New(a.SM.LoadAndSave).ThenFunc(func(w http.ResponseWriter, r *http.Request) {
+	return alice.New(a.sm.LoadAndSave).ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		if a.SM.Exists(ctx, currentUserID) {
-			uid := a.SM.GetInt32(ctx, currentUserID)
-
+		if uid, ok := a.sm.Get(ctx, currentUserID).(int32); ok {
 			user, err := a.Repo.GetUser(ctx, uid)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				a.ServerError(w, err)

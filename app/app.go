@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/alexedwards/scs/v2"
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 )
@@ -37,16 +36,50 @@ type Log interface {
 	Panic(err any)
 }
 
+// SessionManager provides access to the session store.
+type SessionManager interface {
+
+	// Get returns the value associated with the given key.
+	//
+	// If the key is not found, false is returned.
+	Get(ctx context.Context, key string) any
+
+	// Put associates the given value with the given key.
+	Put(ctx context.Context, key string, value any)
+
+	// Remove removes the value associated with the given key.
+	Remove(ctx context.Context, key string)
+
+	// Pop removes and returns the value associated with the given key.
+	Pop(ctx context.Context, key string) any
+
+	// RenewToken updates the session data to have a new session token while
+	// retaining the current session data. The session lifetime is also reset and
+	// the session data status will be set to Modified.
+	//
+	// The old session token and accompanying data are deleted from the session store.
+	//
+	// To mitigate the risk of session fixation attacks, it's important that you
+	// call RenewToken before making any changes to privilege levels (e.g. login
+	// and logout operations). See
+	// [https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session\_Management\_Cheat\_Sheet.md#renew-the-session-id-after-any-privilege-level-change](https://github.com/OWASP/CheatSheetSeries/blob/master/cheatsheets/Session_Management_Cheat_Sheet.md#renew-the-session-id-after-any-privilege-level-change)
+	// for additional information.
+	RenewToken(ctx context.Context) error
+
+	// LoadAndSave loads the session data from the session store.
+	LoadAndSave(next http.Handler) http.Handler
+}
+
 type App struct {
 	logger   Log
 	Repo     *repository.Queries
-	SM       *scs.SessionManager
+	sm       SessionManager
 	Template *template.Cache
 }
 
-func New(logger Log, repo *repository.Queries, sm *scs.SessionManager, tmpl *template.Cache) *App {
+func New(logger Log, repo *repository.Queries, sm SessionManager, tmpl *template.Cache) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, Repo: repo, SM: sm, Template: tmpl}
+	return &App{logger: logger, Repo: repo, sm: sm, Template: tmpl}
 }
 
 func (a *App) ServerError(w http.ResponseWriter, err error) {

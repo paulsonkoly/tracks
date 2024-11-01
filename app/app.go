@@ -10,6 +10,8 @@ import (
 	"github.com/paulsonkoly/tracks/repository"
 )
 
+var TMPDir = "tmp"
+
 // Log defines the application logger.
 type Log interface {
 

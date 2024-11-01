@@ -109,7 +109,9 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Fetch and display the GPS track
-  fetchGPSTrack(map);
+  if (document.getElementById('map')) {
+    fetchGPSTrack(map);
+  }
 }, false);
 
 

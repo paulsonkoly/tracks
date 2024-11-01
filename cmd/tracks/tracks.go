@@ -29,9 +29,7 @@ func main() {
 
 	repo := repository.New(db)
 
-	tmpl := template.NewCache()
-
-	app := app.New(slog.New(), repo, scs.New(db), tmpl)
+	app := app.New(slog.New(), repo, scs.New(db), template.New())
 
 	handlers := handler.New(app)
 

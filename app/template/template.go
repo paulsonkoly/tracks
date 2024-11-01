@@ -1,18 +1,26 @@
+// Package template serves html from ui/html.
 package template
 
 import (
+	"errors"
 	"html/template"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 )
 
-type Cache struct {
+// ErrTemplateNotFound indicates that the template file was not found.
+var ErrTemplateNotFound = errors.New("template not found")
+
+// Template stores the precomplied page templates.
+type Template struct {
 	cache map[string]*template.Template
 }
 
-func NewCache() *Cache {
+// New loads and precompiles all page templates.
+func New() Template {
 	cache := make(map[string]*template.Template)
 
 	var (
@@ -54,14 +62,19 @@ func NewCache() *Cache {
 		}
 	}
 
-	return &Cache{
-		cache: cache,
-	}
+	return Template{cache: cache}
 }
 
-func (t Cache) Get(name string) (*template.Template, bool) {
+// Render renders the template from ui/html/<resource>/page.html. name is the
+// path name with ui/html/ removed. data is template specific dynamic data for
+// template content.
+func (t Template) Render(w io.Writer, name string, data any) error {
 	tmpl, ok := t.cache[name]
-	return tmpl, ok
+	if !ok {
+		return ErrTemplateNotFound
+	}
+
+	return tmpl.Execute(w, data)
 }
 
 func must[T any](value T, err error) T {

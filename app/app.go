@@ -3,10 +3,10 @@ package app
 import (
 	"context"
 	"encoding/gob"
+	"io"
 	"log/slog"
 	"net/http"
 
-	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/repository"
 )
 
@@ -70,16 +70,23 @@ type SessionManager interface {
 	LoadAndSave(next http.Handler) http.Handler
 }
 
+// Template provides html page rendering.
+type Template interface {
+	// Render produces html content identified by name and writes it to w. The data
+	// carries page specific sideband data required on the page.
+	Render(w io.Writer, name string, data any) error
+}
+
 type App struct {
 	logger   Log
 	Repo     *repository.Queries
 	sm       SessionManager
-	Template *template.Cache
+	template Template
 }
 
-func New(logger Log, repo *repository.Queries, sm SessionManager, tmpl *template.Cache) *App {
+func New(logger Log, repo *repository.Queries, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, Repo: repo, sm: sm, Template: tmpl}
+	return &App{logger: logger, Repo: repo, sm: sm, template: tmpl}
 }
 
 func (a *App) ServerError(w http.ResponseWriter, err error) {

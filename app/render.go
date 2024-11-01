@@ -1,15 +1,12 @@
 package app
 
 import (
-	"errors"
 	"io"
 	"net/http"
 
 	"github.com/justinas/nosurf"
 	"github.com/paulsonkoly/tracks/repository"
 )
-
-var ErrTemplateNotFound = errors.New("template not found")
 
 var flashKey = "flash"
 
@@ -21,11 +18,10 @@ type renderData struct {
 	CSRFToken   string
 }
 
-// nolint:revive
-// exporting function returning struct with non-exported fields. This is
-// intentional here so the handlers can only construct renderData with
-// CurrentUser & CSRFToken etc.
-func (a *App) BaseTemplate(r *http.Request) renderData {
+func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
+	// exporting function returning struct with non-exported fields. This is
+	// intentional here so the handlers can only construct renderData with
+	// CurrentUser & CSRFToken etc.
 	td := renderData{}
 
 	user := a.CurrentUser(r.Context())
@@ -53,10 +49,5 @@ func (r renderData) WithForm(form any) renderData {
 // path name with ui/html/ removed. renderData can be obtained by calling
 // BaseTemplate().
 func (a *App) Render(w io.Writer, name string, data renderData) error {
-	tmpl, ok := a.Template.Get(name)
-	if !ok {
-		return ErrTemplateNotFound
-	}
-
-	return tmpl.Execute(w, data)
+	return a.template.Render(w, name, data)
 }

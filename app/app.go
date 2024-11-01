@@ -82,11 +82,12 @@ type App struct {
 	Repo     *repository.Queries
 	sm       SessionManager
 	template Template
+	decoder  fDecoder
 }
 
 func New(logger Log, repo *repository.Queries, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, Repo: repo, sm: sm, template: tmpl}
+	return &App{logger: logger, Repo: repo, sm: sm, template: tmpl, decoder: newDecoder()}
 }
 
 func (a *App) ServerError(w http.ResponseWriter, err error) {

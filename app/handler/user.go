@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 
-	fdecoder "github.com/go-playground/form/v4"
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/form"
 	"github.com/paulsonkoly/tracks/repository"
@@ -31,15 +30,7 @@ func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 
 	loginForm := form.Login{}
 
-	decoder := fdecoder.NewDecoder()
-	err := r.ParseForm()
-	if err != nil {
-		a.ClientError(w, err, http.StatusBadRequest)
-		return
-	}
-
-	err = decoder.Decode(&loginForm, r.PostForm)
-	if err != nil {
+	if err := a.DecodeForm(&loginForm, r); err != nil {
 		a.ClientError(w, err, http.StatusBadRequest)
 		return
 	}
@@ -116,23 +107,14 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 
 	newUserForm := form.User{}
 
-	decoder := fdecoder.NewDecoder()
-	err := r.ParseForm()
-	if err != nil {
-		a.ClientError(w, err, http.StatusBadRequest)
-		return
-	}
-
-	err = decoder.Decode(&newUserForm, r.PostForm)
-	if err != nil {
+	if err := a.DecodeForm(&newUserForm, r); err != nil {
 		a.ClientError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	if !newUserForm.Validate(r.Context(), a.Repo) {
 		// if any errors
-		err = a.Render(w, "user/new.html", a.BaseTemplate(r).WithForm(newUserForm))
-		if err != nil {
+		if err := a.Render(w, "user/new.html", a.BaseTemplate(r).WithForm(newUserForm)); err != nil {
 			a.ServerError(w, err)
 			return
 		}
@@ -200,15 +182,7 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 
 	form := form.User{}
 
-	decoder := fdecoder.NewDecoder()
-	err = r.ParseForm()
-	if err != nil {
-		a.ClientError(w, err, http.StatusBadRequest)
-		return
-	}
-
-	err = decoder.Decode(&form, r.PostForm)
-	if err != nil {
+	if err := a.DecodeForm(&form, r); err != nil {
 		a.ClientError(w, err, http.StatusBadRequest)
 		return
 	}

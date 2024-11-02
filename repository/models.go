@@ -5,8 +5,63 @@
 package repository
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 )
+
+type Filestatus string
+
+const (
+	FilestatusUploaded         Filestatus = "uploaded"
+	FilestatusProcessed        Filestatus = "processed"
+	FilestatusProcessingFailed Filestatus = "processing_failed"
+)
+
+func (e *Filestatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Filestatus(s)
+	case string:
+		*e = Filestatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Filestatus: %T", src)
+	}
+	return nil
+}
+
+type NullFilestatus struct {
+	Filestatus Filestatus
+	Valid      bool // Valid is true if Filestatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFilestatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.Filestatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Filestatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFilestatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Filestatus), nil
+}
+
+type Gpxfile struct {
+	ID       int32
+	Filename string
+	Filesize int64
+	Status   Filestatus
+	// gpx metadata link field
+	Link      string
+	CreatedAt time.Time
+}
 
 type SchemaMigration struct {
 	Version string

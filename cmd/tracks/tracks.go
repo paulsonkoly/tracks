@@ -29,7 +29,7 @@ func main() {
 
 	repo := repository.New(db)
 
-	app := app.New(slog.New(), repo, scs.New(db), template.New())
+	app := app.New(slog.New(), repo, db, scs.New(db), template.New())
 
 	handlers := handler.New(app)
 

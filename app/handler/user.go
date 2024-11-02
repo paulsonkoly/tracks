@@ -104,6 +104,7 @@ func (h *Handler) NewUser(w http.ResponseWriter, r *http.Request) {
 // PostNewUser saves new user.
 func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	a := h.app
+	committed := false
 
 	newUserForm := form.User{}
 
@@ -112,7 +113,26 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !newUserForm.Validate(r.Context(), a.Repo) {
+	// create a transaction before the uniqueness validation
+	tx, err := a.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+	defer func() {
+		if !committed {
+			if err := tx.Rollback(); err != nil {
+				a.ServerError(w, err)
+			}
+		}
+	}()
+
+	ok, err := newUserForm.Validate(r.Context(), a.Repo.WithTx(tx))
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+	if !ok {
 		// if any errors
 		if err := a.Render(w, "user/new.html", a.BaseTemplate(r).WithForm(newUserForm)); err != nil {
 			a.ServerError(w, err)
@@ -130,11 +150,18 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 	insert.HashedPassword = string(hash)
 
-	_, err = a.Repo.InsertUser(r.Context(), insert)
+	_, err = a.Repo.WithTx(tx).InsertUser(r.Context(), insert)
 	if err != nil {
 		a.ServerError(w, err)
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	committed = true
 
 	a.FlashInfo(r.Context(), "User created.")
 	a.LogAction(r.Context(), "user created", slog.String("username", insert.Username))
@@ -173,6 +200,7 @@ func (h *Handler) EditUser(w http.ResponseWriter, r *http.Request) {
 // PostEditUser updates the user with the updated data.
 func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 	a := h.app
+	committed := false
 
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
@@ -187,7 +215,20 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser, err := a.Repo.GetUser(r.Context(), int32(id))
+	tx, err := a.DB.BeginTx(r.Context(), nil)
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+	defer func() {
+		if !committed {
+			if err := tx.Rollback(); err != nil {
+				a.ServerError(w, err)
+			}
+		}
+	}()
+
+	dbUser, err := a.Repo.WithTx(tx).GetUser(r.Context(), int32(id))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -198,7 +239,12 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 	}
 	form.ID = id
 
-	if !form.ValidateEdit() {
+	ok, err := form.ValidateEdit(r.Context(), a.Repo.WithTx(tx))
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+	if !ok {
 		err = a.Render(w, "user/edit.html", a.BaseTemplate(r).WithForm(form))
 		if err != nil {
 			a.ServerError(w, err)
@@ -219,11 +265,17 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 		upd.HashedPassword = string(hash)
 	}
 
-	err = a.Repo.UpdateUser(r.Context(), upd)
-	if err != nil {
+	if err := a.Repo.WithTx(tx).UpdateUser(r.Context(), upd); err != nil {
 		a.ServerError(w, err)
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	committed = true
 
 	a.FlashInfo(r.Context(), "User updated.")
 	a.LogAction(r.Context(), "user updated", slog.String("username", upd.Username), slog.Int("id", id))

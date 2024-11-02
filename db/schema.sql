@@ -9,9 +9,61 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: filestatus; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.filestatus AS ENUM (
+    'uploaded',
+    'processed',
+    'processing_failed'
+);
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: gpxfiles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gpxfiles (
+    id integer NOT NULL,
+    filename text NOT NULL,
+    filesize bigint NOT NULL,
+    status public.filestatus NOT NULL,
+    link text DEFAULT ''::text NOT NULL,
+    created_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: COLUMN gpxfiles.link; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.gpxfiles.link IS 'gpx metadata link field';
+
+
+--
+-- Name: gpxfiles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gpxfiles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gpxfiles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gpxfiles_id_seq OWNED BY public.gpxfiles.id;
+
 
 --
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
@@ -66,10 +118,33 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: gpxfiles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gpxfiles ALTER COLUMN id SET DEFAULT nextval('public.gpxfiles_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: gpxfiles gpxfiles_filename_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gpxfiles
+    ADD CONSTRAINT gpxfiles_filename_key UNIQUE (filename);
+
+
+--
+-- Name: gpxfiles gpxfiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gpxfiles
+    ADD CONSTRAINT gpxfiles_pkey PRIMARY KEY (id);
 
 
 --
@@ -122,4 +197,5 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('20241024143931'),
-    ('20241025092553');
+    ('20241025092553'),
+    ('20241102084123');

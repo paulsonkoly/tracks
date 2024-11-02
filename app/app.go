@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"database/sql"
 	"encoding/gob"
 	"io"
 	"log/slog"
@@ -82,14 +83,15 @@ type Template interface {
 type App struct {
 	logger   Log
 	Repo     *repository.Queries
+	DB       *sql.DB
 	sm       SessionManager
 	template Template
 	decoder  fDecoder
 }
 
-func New(logger Log, repo *repository.Queries, sm SessionManager, tmpl Template) *App {
+func New(logger Log, repo *repository.Queries, db *sql.DB, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, Repo: repo, sm: sm, template: tmpl, decoder: newDecoder()}
+	return &App{logger: logger, Repo: repo, DB: db, sm: sm, template: tmpl, decoder: newDecoder()}
 }
 
 func (a *App) ServerError(w http.ResponseWriter, err error) {

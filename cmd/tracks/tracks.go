@@ -14,6 +14,7 @@ import (
 	"github.com/paulsonkoly/tracks/app/log/slog"
 	"github.com/paulsonkoly/tracks/app/session_manager/scs"
 	"github.com/paulsonkoly/tracks/app/template"
+	"github.com/paulsonkoly/tracks/app/tx"
 	"github.com/paulsonkoly/tracks/repository"
 	"github.com/tkrajina/gpxgo/gpx"
 )
@@ -27,9 +28,7 @@ func main() {
 	db := openDB()
 	defer db.Close()
 
-	repo := repository.New(db)
-
-	app := app.New(slog.New(), repo, db, scs.New(db), template.New())
+	app := app.New(slog.New(), tx.New(repository.New(db), db), scs.New(db), template.New())
 
 	handlers := handler.New(app)
 

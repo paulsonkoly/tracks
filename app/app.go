@@ -73,6 +73,20 @@ type SessionManager interface {
 	LoadAndSave(next http.Handler) http.Handler
 }
 
+type TXHandle = *sql.Tx
+
+// Transaction manages per request database transaction.
+type Transaction interface {
+	// WithTx runs blk in a transaction. error will be returned if either there
+	// was a problem with the transaction or blk returned an error. blk must pass
+	// h to Repo() to use transaction.
+	WithTx(ctx context.Context, blk func(h TXHandle) error) (err error)
+
+	// Repo returns the query interface.
+	// Pass nil if not within a transaction.
+	Repo(h TXHandle) *repository.Queries
+}
+
 // Template provides html page rendering.
 type Template interface {
 	// Render produces html content identified by name and writes it to w. The data
@@ -82,16 +96,15 @@ type Template interface {
 
 type App struct {
 	logger   Log
-	Repo     *repository.Queries
-	DB       *sql.DB
+	txdb     Transaction
 	sm       SessionManager
 	template Template
 	decoder  fDecoder
 }
 
-func New(logger Log, repo *repository.Queries, db *sql.DB, sm SessionManager, tmpl Template) *App {
+func New(logger Log, dbtx Transaction, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, Repo: repo, DB: db, sm: sm, template: tmpl, decoder: newDecoder()}
+	return &App{logger: logger, txdb: dbtx, sm: sm, template: tmpl, decoder: newDecoder()}
 }
 
 func (a *App) ServerError(w http.ResponseWriter, err error) {

@@ -46,7 +46,7 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		if uid, ok := a.sm.Get(ctx, currentUserID).(int32); ok {
-			user, err := a.Repo.GetUser(ctx, uid)
+			user, err := a.Repo(nil).GetUser(ctx, uid)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				a.ServerError(w, err)
 				return

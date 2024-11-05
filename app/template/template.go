@@ -23,13 +23,13 @@ type Template struct {
 func New() Template {
 	cache := make(map[string]*template.Template)
 
-	var (
+	const (
 		htmlPath     = "ui/html/"
 		basePath     = "ui/html/base.html"
 		partialsPath = "ui/html/partials/"
-
-		partials = []string{}
 	)
+
+	partials := []string{}
 
 	// load partials for all templates
 	for _, partial := range must(os.ReadDir(partialsPath)) {

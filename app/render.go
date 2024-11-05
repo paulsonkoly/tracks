@@ -8,7 +8,7 @@ import (
 	"github.com/paulsonkoly/tracks/repository"
 )
 
-var flashKey = "flash"
+const flashKey = "flash"
 
 type renderData struct {
 	Users       []repository.User

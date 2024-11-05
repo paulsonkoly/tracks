@@ -2,23 +2,26 @@ package form
 
 import (
 	"context"
-	"database/sql"
-	errs "errors"
 	"unicode/utf8"
-
-	"github.com/paulsonkoly/tracks/repository"
 )
 
+// User provides user data validation.
 type User struct {
-	ID              int
-	Username        string
-	Password        string
-	PasswordConfirm string
+	ID              int    // ID points to the user to edit
+	Username        string // Username is the login account
+	Password        string // Password is the login password
+	PasswordConfirm string // PasswordConfirm is the confirmation password
 	errors
 }
 
-func (f *User) Validate(ctx context.Context, repo *repository.Queries) (bool, error) {
-	if err := f.validateUsername(ctx, repo); err != nil {
+// UserUniqueChecker checks if the user does not exist in the database.
+type UserUniqueChecker interface {
+	UserUnique(ctx context.Context, username string) (bool, error)
+}
+
+// Validate validates the user data.
+func (f *User) Validate(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
+	if err := f.validateUsername(ctx, uniq); err != nil {
 		return false, err
 	}
 	f.validatePassword()
@@ -26,9 +29,11 @@ func (f *User) Validate(ctx context.Context, repo *repository.Queries) (bool, er
 	return f.valid(), nil
 }
 
-func (f *User) ValidateEdit(ctx context.Context, repo *repository.Queries) (bool, error) {
+// ValidateEdit validates the user data for editing. Empty data fields are not
+// updated, so they are valid.
+func (f *User) ValidateEdit(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
 	if f.Username != "" {
-		if err := f.validateUsername(ctx, repo); err != nil {
+		if err := f.validateUsername(ctx, uniq); err != nil {
 			return false, err
 		}
 	}
@@ -40,16 +45,16 @@ func (f *User) ValidateEdit(ctx context.Context, repo *repository.Queries) (bool
 	return f.valid(), nil
 }
 
-func (f *User) validateUsername(ctx context.Context, repo *repository.Queries) error {
+func (f *User) validateUsername(ctx context.Context, uniq UserUniqueChecker) error {
 	if utf8.RuneCountInString(f.Username) < 3 {
 		f.AddFieldError("Username", "Username too short. Must be at least 3 characters long.")
 	}
-	_, err := repo.GetUserByName(ctx, f.Username)
+
+	ok, err := uniq.UserUnique(ctx, f.Username)
 	if err != nil {
-		if !errs.Is(err, sql.ErrNoRows) {
-			return err
-		}
-	} else {
+		return err
+	}
+	if !ok {
 		f.AddError("User already exist.")
 	}
 

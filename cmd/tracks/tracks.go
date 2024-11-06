@@ -36,7 +36,7 @@ func main() {
 
 	mux.HandleFunc("GET /", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/", viewTrack)
-	mux.Handle("GET /track/upload", app.RequiresLogIn(http.HandlerFunc(handlers.UploadTrack)))
+	mux.Handle("GET /track/files", app.RequiresLogIn(http.HandlerFunc(handlers.TrackFiles)))
 	mux.Handle("POST /track/upload", app.RequiresLogIn(http.HandlerFunc(handlers.PostUploadTrack)))
 
 	mux.Handle("GET /users", app.RequiresLogIn(http.HandlerFunc(handlers.ViewUsers)))

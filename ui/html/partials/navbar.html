@@ -11,6 +11,9 @@
       </div>
       <!-- Centre - Nav Links -->
       <div class="md:flex space-x-8">
+        {{with .CurrentUser}}
+        <a href="/track/files" class="text-white hover:text-gray-200">Files</a>
+        {{end}}
         <a href="#" class="text-white hover:text-gray-200">Home</a>
         <a href="#" class="text-white hover:text-gray-200">About</a>
         {{with .CurrentUser}}

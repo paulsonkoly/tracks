@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"errors"
 	"io"
 	"net/http"
@@ -20,11 +21,16 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) UploadTrack(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) TrackFiles(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
 	form := form.GPXFile{}
-	if err := a.Render(w, "track/upload.html", a.BaseTemplate(r).WithForm(form)); err != nil {
+	files, err := a.Repo(nil).GetGPXFiles(r.Context())
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		a.ServerError(w, err)
+		return
+	}
+	if err := a.Render(w, "track/files.html", a.BaseTemplate(r).WithForm(form).WithGPXFiles(files)); err != nil {
 		a.ServerError(w, err)
 	}
 }

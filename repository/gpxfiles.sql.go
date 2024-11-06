@@ -45,6 +45,40 @@ func (q *Queries) GetGPXFileByFilename(ctx context.Context, filename string) (Gp
 	return i, err
 }
 
+const getGPXFiles = `-- name: GetGPXFiles :many
+select id, filename, filesize, status, link, created_at from "public"."gpxfiles" order by created_at desc
+`
+
+func (q *Queries) GetGPXFiles(ctx context.Context) ([]Gpxfile, error) {
+	rows, err := q.db.QueryContext(ctx, getGPXFiles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Gpxfile
+	for rows.Next() {
+		var i Gpxfile
+		if err := rows.Scan(
+			&i.ID,
+			&i.Filename,
+			&i.Filesize,
+			&i.Status,
+			&i.Link,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertGPXFile = `-- name: InsertGPXFile :exec
 insert into "public"."gpxfiles" (filename, filesize, link, status, created_at) values ($1, $2, $3, 'uploaded', Now())
 `

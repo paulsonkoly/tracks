@@ -12,6 +12,7 @@ const flashKey = "flash"
 
 type renderData struct {
 	Users       []repository.User
+	GPXFiles    []repository.Gpxfile
 	Form        any
 	Flash       Flash
 	CurrentUser *repository.User
@@ -37,6 +38,11 @@ func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
 
 func (r renderData) WithUsers(users []repository.User) renderData {
 	r.Users = users
+	return r
+}
+
+func (r renderData) WithGPXFiles(files []repository.Gpxfile) renderData {
+	r.GPXFiles = files
 	return r
 }
 

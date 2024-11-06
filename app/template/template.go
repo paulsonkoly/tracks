@@ -1,4 +1,5 @@
-// Package template serves html from ui/html.
+// Package template serves html from ui/html. The base template is
+// ui/html/base.html.
 package template
 
 import (
@@ -9,6 +10,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	humanize "github.com/dustin/go-humanize"
 )
 
 // ErrTemplateNotFound indicates that the template file was not found.
@@ -18,6 +21,13 @@ var ErrTemplateNotFound = errors.New("template not found")
 type Template struct {
 	cache map[string]*template.Template
 }
+
+var funcMap = template.FuncMap{
+	"bytes": bytes,
+	"time":  humanize.Time,
+}
+
+func bytes(u int64) string { return humanize.Bytes(uint64(u)) }
 
 // New loads and precompiles all page templates.
 func New() Template {
@@ -58,7 +68,8 @@ func New() Template {
 			key := resource.Name() + "/" + name
 
 			paths := slices.Concat([]string{basePath, pagePath}, partials)
-			cache[key] = must(template.ParseFiles(paths...))
+			t := template.New("base.html").Funcs(funcMap)
+			cache[key] = must(t.ParseFiles(paths...))
 		}
 	}
 
@@ -74,7 +85,7 @@ func (t Template) Render(w io.Writer, name string, data any) error {
 		return ErrTemplateNotFound
 	}
 
-	return tmpl.Execute(w, data)
+	return tmpl.ExecuteTemplate(w, "base.html", data)
 }
 
 func must[T any](value T, err error) T {

@@ -36,9 +36,13 @@ func main() {
 
 	mux.HandleFunc("GET /", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/", viewTrack)
-	mux.Handle("GET /track/files", app.RequiresLogIn(http.HandlerFunc(handlers.TrackFiles)))
-	mux.Handle("POST /track/upload", app.RequiresLogIn(http.HandlerFunc(handlers.PostUploadTrack)))
 
+	// GPX file
+	mux.Handle("GET /gpxfiles", app.RequiresLogIn(http.HandlerFunc(handlers.GPXFiles)))
+	mux.Handle("POST /gpxfile/upload", app.RequiresLogIn(http.HandlerFunc(handlers.PostUploadGPXFile)))
+	mux.Handle("POST /gpxfile/{id}/delete", app.RequiresLogIn(http.HandlerFunc(handlers.DeleteGPXFile)))
+
+	// User
 	mux.Handle("GET /users", app.RequiresLogIn(http.HandlerFunc(handlers.ViewUsers)))
 	mux.Handle("GET /user/new", app.RequiresLogIn(http.HandlerFunc(handlers.NewUser)))
 	mux.Handle("POST /user/new", app.RequiresLogIn(http.HandlerFunc(handlers.PostNewUser)))

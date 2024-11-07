@@ -9,6 +9,15 @@ import (
 	"context"
 )
 
+const deleteGPXFile = `-- name: DeleteGPXFile :exec
+delete from "public"."gpxfiles" where id = $1
+`
+
+func (q *Queries) DeleteGPXFile(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteGPXFile, id)
+	return err
+}
+
 const getGPXFile = `-- name: GetGPXFile :one
 select id, filename, filesize, status, link, created_at from "public"."gpxfiles" where id = $1
 `

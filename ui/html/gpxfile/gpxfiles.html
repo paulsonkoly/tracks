@@ -8,7 +8,7 @@
         <h2 class="text-2xl font-semibold text-gray-700 mb-6 text-center">Upload a File</h2>
 
         {{with .Form}}
-        <form action="/track/upload" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="/gpxfile/upload" method="POST" enctype="multipart/form-data" class="space-y-6">
           <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
 
           <!-- Drag-and-drop area -->
@@ -72,7 +72,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-500">{{.Link}}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt | time}}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-center space-x-4">
-                  <form action="/track/delete/{{.ID}}" method="POST" class="confirm">
+                  <form action="/gpxfile/{{.ID}}/delete" method="POST" class="confirm">
                     <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
                     <button type="submit" class="text-red-600 hover:text-red-900 confirm">Delete</button>
                   </form>

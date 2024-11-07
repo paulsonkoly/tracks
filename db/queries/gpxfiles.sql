@@ -9,3 +9,6 @@ select * from "public"."gpxfiles" where filename = $1;
 
 -- name: GetGPXFiles :many
 select * from "public"."gpxfiles" order by created_at desc;
+
+-- name: DeleteGPXFile :exec
+delete from "public"."gpxfiles" where id = $1;

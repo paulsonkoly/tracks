@@ -10,6 +10,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
+
+
+--
 -- Name: filestatus; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -82,6 +96,37 @@ ALTER SEQUENCE public.gpxfiles_id_seq OWNED BY public.gpxfiles.id;
 CREATE TABLE public.schema_migrations (
     version character varying(128) NOT NULL
 );
+
+
+--
+-- Name: segments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.segments (
+    id integer NOT NULL,
+    track_id integer NOT NULL,
+    geometry public.geometry
+);
+
+
+--
+-- Name: segments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.segments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: segments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.segments_id_seq OWNED BY public.segments.id;
 
 
 --
@@ -167,6 +212,13 @@ ALTER TABLE ONLY public.gpxfiles ALTER COLUMN id SET DEFAULT nextval('public.gpx
 
 
 --
+-- Name: segments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.segments ALTER COLUMN id SET DEFAULT nextval('public.segments_id_seq'::regclass);
+
+
+--
 -- Name: tracks id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -202,6 +254,14 @@ ALTER TABLE ONLY public.gpxfiles
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: segments segments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.segments
+    ADD CONSTRAINT segments_pkey PRIMARY KEY (id);
 
 
 --
@@ -244,6 +304,14 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 
 --
+-- Name: segments segments_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.segments
+    ADD CONSTRAINT segments_track_id_fkey FOREIGN KEY (track_id) REFERENCES public.tracks(id) ON DELETE CASCADE;
+
+
+--
 -- Name: tracks tracks_gpxfile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -264,4 +332,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241024143931'),
     ('20241025092553'),
     ('20241102084123'),
-    ('20241107112239');
+    ('20241107112239'),
+    ('20241107141128');

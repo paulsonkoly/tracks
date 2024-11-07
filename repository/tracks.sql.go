@@ -9,8 +9,8 @@ import (
 	"context"
 )
 
-const insertTrack = `-- name: InsertTrack :exec
-insert into "public"."tracks" (gpxfile_id, type, name) values ($1, $2, $3)
+const insertTrack = `-- name: InsertTrack :one
+insert into "public"."tracks" (gpxfile_id, type, name) values ($1, $2, $3) returning id
 `
 
 type InsertTrackParams struct {
@@ -19,7 +19,9 @@ type InsertTrackParams struct {
 	Name      string
 }
 
-func (q *Queries) InsertTrack(ctx context.Context, arg InsertTrackParams) error {
-	_, err := q.db.ExecContext(ctx, insertTrack, arg.GpxfileID, arg.Type, arg.Name)
-	return err
+func (q *Queries) InsertTrack(ctx context.Context, arg InsertTrackParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, insertTrack, arg.GpxfileID, arg.Type, arg.Name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }

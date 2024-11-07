@@ -109,6 +109,12 @@ type SchemaMigration struct {
 	Version string
 }
 
+type Segment struct {
+	ID       int32
+	TrackID  int32
+	Geometry interface{}
+}
+
 type Session struct {
 	Token  string
 	Data   []byte

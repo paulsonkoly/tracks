@@ -4,12 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/form"
@@ -108,14 +110,48 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 			}
 
 			for _, track := range gpxF.Tracks {
-				err = a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeTrack, Name: track.Name})
+
+				tid, err := a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeTrack, Name: track.Name})
 				if err != nil {
 					goto Failed
+				}
+
+				for _, segment := range track.Segments {
+
+					gBuilder := strings.Builder{}
+					gBuilder.WriteString("LINESTRING(")
+					for ix, point := range segment.Points {
+						if ix > 0 {
+							gBuilder.WriteString(", ")
+						}
+						gBuilder.WriteString(fmt.Sprintf("%f %f", point.Longitude, point.Latitude))
+					}
+					gBuilder.WriteString(")")
+
+					err = a.Repo(h).InsertSegment(context.Background(), repository.InsertSegmentParams{TrackID: tid, Geometry: gBuilder.String()})
+					if err != nil {
+						goto Failed
+					}
 				}
 			}
 
 			for _, route := range gpxF.Routes {
-				err = a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeRoute, Name: route.Name})
+				tid, err := a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeRoute, Name: route.Name})
+				if err != nil {
+					goto Failed
+				}
+
+				gBuilder := strings.Builder{}
+				gBuilder.WriteString("LINESTRING(")
+				for ix, point := range route.Points {
+					if ix > 0 {
+						gBuilder.WriteString(", ")
+					}
+					gBuilder.WriteString(fmt.Sprintf("%f %f", point.Longitude, point.Latitude))
+				}
+				gBuilder.WriteString(")")
+
+				err = a.Repo(h).InsertSegment(context.Background(), repository.InsertSegmentParams{TrackID: tid, Geometry: gBuilder.String()})
 				if err != nil {
 					goto Failed
 				}

@@ -20,6 +20,16 @@ CREATE TYPE public.filestatus AS ENUM (
 );
 
 
+--
+-- Name: tracktype; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.tracktype AS ENUM (
+    'track',
+    'route'
+);
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -86,6 +96,38 @@ CREATE TABLE public.sessions (
 
 
 --
+-- Name: tracks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tracks (
+    id integer NOT NULL,
+    name text DEFAULT ''::text NOT NULL,
+    type public.tracktype NOT NULL,
+    gpxfile_id integer NOT NULL
+);
+
+
+--
+-- Name: tracks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tracks_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tracks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tracks_id_seq OWNED BY public.tracks.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -122,6 +164,13 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 --
 
 ALTER TABLE ONLY public.gpxfiles ALTER COLUMN id SET DEFAULT nextval('public.gpxfiles_id_seq'::regclass);
+
+
+--
+-- Name: tracks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tracks ALTER COLUMN id SET DEFAULT nextval('public.tracks_id_seq'::regclass);
 
 
 --
@@ -164,6 +213,14 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tracks
+    ADD CONSTRAINT tracks_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -187,6 +244,14 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 
 --
+-- Name: tracks tracks_gpxfile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tracks
+    ADD CONSTRAINT tracks_gpxfile_id_fkey FOREIGN KEY (gpxfile_id) REFERENCES public.gpxfiles(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -198,4 +263,5 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 INSERT INTO public.schema_migrations (version) VALUES
     ('20241024143931'),
     ('20241025092553'),
-    ('20241102084123');
+    ('20241102084123'),
+    ('20241107112239');

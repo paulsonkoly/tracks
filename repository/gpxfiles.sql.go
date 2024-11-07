@@ -9,13 +9,15 @@ import (
 	"context"
 )
 
-const deleteGPXFile = `-- name: DeleteGPXFile :exec
-delete from "public"."gpxfiles" where id = $1
+const deleteGPXFile = `-- name: DeleteGPXFile :one
+delete from "public"."gpxfiles" where id = $1 returning filename
 `
 
-func (q *Queries) DeleteGPXFile(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteGPXFile, id)
-	return err
+func (q *Queries) DeleteGPXFile(ctx context.Context, id int32) (string, error) {
+	row := q.db.QueryRowContext(ctx, deleteGPXFile, id)
+	var filename string
+	err := row.Scan(&filename)
+	return filename, err
 }
 
 const getGPXFile = `-- name: GetGPXFile :one
@@ -88,8 +90,8 @@ func (q *Queries) GetGPXFiles(ctx context.Context) ([]Gpxfile, error) {
 	return items, nil
 }
 
-const insertGPXFile = `-- name: InsertGPXFile :exec
-insert into "public"."gpxfiles" (filename, filesize, link, status, created_at) values ($1, $2, $3, 'uploaded', Now())
+const insertGPXFile = `-- name: InsertGPXFile :one
+insert into "public"."gpxfiles" (filename, filesize, link, status, created_at) values ($1, $2, $3, 'uploaded', Now()) returning id
 `
 
 type InsertGPXFileParams struct {
@@ -98,7 +100,23 @@ type InsertGPXFileParams struct {
 	Link     string
 }
 
-func (q *Queries) InsertGPXFile(ctx context.Context, arg InsertGPXFileParams) error {
-	_, err := q.db.ExecContext(ctx, insertGPXFile, arg.Filename, arg.Filesize, arg.Link)
+func (q *Queries) InsertGPXFile(ctx context.Context, arg InsertGPXFileParams) (int32, error) {
+	row := q.db.QueryRowContext(ctx, insertGPXFile, arg.Filename, arg.Filesize, arg.Link)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const setGPXFileStatus = `-- name: SetGPXFileStatus :exec
+update "public"."gpxfiles" set status = $1 where id = $2
+`
+
+type SetGPXFileStatusParams struct {
+	Status Filestatus
+	ID     int32
+}
+
+func (q *Queries) SetGPXFileStatus(ctx context.Context, arg SetGPXFileStatusParams) error {
+	_, err := q.db.ExecContext(ctx, setGPXFileStatus, arg.Status, arg.ID)
 	return err
 }

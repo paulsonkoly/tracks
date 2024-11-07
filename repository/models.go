@@ -53,6 +53,48 @@ func (ns NullFilestatus) Value() (driver.Value, error) {
 	return string(ns.Filestatus), nil
 }
 
+type Tracktype string
+
+const (
+	TracktypeTrack Tracktype = "track"
+	TracktypeRoute Tracktype = "route"
+)
+
+func (e *Tracktype) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Tracktype(s)
+	case string:
+		*e = Tracktype(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Tracktype: %T", src)
+	}
+	return nil
+}
+
+type NullTracktype struct {
+	Tracktype Tracktype
+	Valid     bool // Valid is true if Tracktype is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTracktype) Scan(value interface{}) error {
+	if value == nil {
+		ns.Tracktype, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Tracktype.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTracktype) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Tracktype), nil
+}
+
 type Gpxfile struct {
 	ID       int32
 	Filename string
@@ -71,6 +113,13 @@ type Session struct {
 	Token  string
 	Data   []byte
 	Expiry time.Time
+}
+
+type Track struct {
+	ID        int32
+	Name      string
+	Type      Tracktype
+	GpxfileID int32
 }
 
 type User struct {

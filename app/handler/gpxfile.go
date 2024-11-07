@@ -54,13 +54,19 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 
 	err = a.WithTx(r.Context(), func(h app.TXHandle) error {
 
+		files, err := a.Repo(nil).GetGPXFiles(r.Context())
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			a.ServerError(w, err)
+			return err
+		}
+
 		form := form.GPXFile{Filename: hdr.Filename}
 		ok, err := form.Validate(r.Context(), a.Repo(h))
 		if err != nil {
 			return err
 		}
 		if !ok {
-			if err := a.Render(w, "gpxfile/gpxfiles.html", a.BaseTemplate(r).WithForm(form)); err != nil {
+			if err := a.Render(w, "gpxfile/gpxfiles.html", a.BaseTemplate(r).WithGPXFiles(files).WithForm(form)); err != nil {
 				a.ServerError(w, err)
 			}
 			return nil

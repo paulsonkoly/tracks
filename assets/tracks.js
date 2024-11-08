@@ -17,10 +17,18 @@ function createGPSLineString(data) {
   return new LineString(coordinates);
 }
 
+// get track id from current url. This assumes that we are running on the track
+// view page. This assumption might not be true and this needs rework.
+function getTrackId() {
+  const url = window.location.href;
+  const id = url.split('/').pop()
+  return id;
+}
+
 // Function to fetch data from a JSON endpoint
 async function fetchGPSTrack(map) {
   try {
-    const response = await fetch('http://localhost:9999/track'); // Replace with your JSON endpoint URL
+    const response = await fetch('http://localhost:9999/track/' + getTrackId() + '/points'); // Replace with your JSON endpoint URL
     const jsonData = await response.json();
 
     // Create a LineString from the fetched data

@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"net/http"
 	"os"
 
@@ -16,7 +15,6 @@ import (
 	"github.com/paulsonkoly/tracks/app/template"
 	"github.com/paulsonkoly/tracks/app/tx"
 	"github.com/paulsonkoly/tracks/repository"
-	"github.com/tkrajina/gpxgo/gpx"
 )
 
 func main() {
@@ -34,8 +32,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /", handlers.ViewTrack)
-	mux.HandleFunc("GET /track/", viewTrack)
+	// mux.HandleFunc("GET /{$}", root)
+
+	mux.HandleFunc("GET /track/{id}", handlers.ViewTrack)
+	mux.HandleFunc("GET /track/{id}/points", handlers.ViewTrackPoints)
 
 	// GPX file
 	mux.Handle("GET /gpxfiles", app.RequiresLogIn(http.HandlerFunc(handlers.GPXFiles)))
@@ -79,30 +79,4 @@ func openDB() *sql.DB {
 	}
 
 	return db
-}
-
-func viewTrack(w http.ResponseWriter, _ *http.Request) {
-	gpxF, err := gpx.ParseFile("./tracks.gpx")
-	if err != nil {
-		panic(err)
-	}
-
-	points := []gpx.GPXPoint{}
-
-	for _, track := range gpxF.Tracks {
-		for _, segment := range track.Segments {
-			points = append(points, segment.Points...)
-		}
-	}
-
-	for _, route := range gpxF.Routes {
-		points = append(points, route.Points...)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	err = json.NewEncoder(w).Encode(points)
-	if err != nil {
-		panic(err)
-	}
 }

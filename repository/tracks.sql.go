@@ -9,6 +9,22 @@ import (
 	"context"
 )
 
+const getTrack = `-- name: GetTrack :one
+select id, name, type, gpxfile_id from "public"."tracks" where id = $1
+`
+
+func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
+	row := q.db.QueryRowContext(ctx, getTrack, id)
+	var i Track
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Type,
+		&i.GpxfileID,
+	)
+	return i, err
+}
+
 const insertTrack = `-- name: InsertTrack :one
 insert into "public"."tracks" (gpxfile_id, type, name) values ($1, $2, $3) returning id
 `

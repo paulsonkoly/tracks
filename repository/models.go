@@ -105,6 +105,12 @@ type Gpxfile struct {
 	CreatedAt time.Time
 }
 
+type Point struct {
+	TrackID   int32
+	Longitude interface{}
+	Latitude  interface{}
+}
+
 type SchemaMigration struct {
 	Version string
 }

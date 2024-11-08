@@ -9,6 +9,33 @@ import (
 	"context"
 )
 
+const getTrackSegmentPoints = `-- name: GetTrackSegmentPoints :many
+SELECT track_id, longitude, latitude FROM points where track_id=$1
+`
+
+func (q *Queries) GetTrackSegmentPoints(ctx context.Context, trackID int32) ([]Point, error) {
+	rows, err := q.db.QueryContext(ctx, getTrackSegmentPoints, trackID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Point
+	for rows.Next() {
+		var i Point
+		if err := rows.Scan(&i.TrackID, &i.Longitude, &i.Latitude); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertSegment = `-- name: InsertSegment :exec
 insert into "public"."segments" (track_id, geometry) values ($1, $2)
 `

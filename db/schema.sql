@@ -90,15 +90,6 @@ ALTER SEQUENCE public.gpxfiles_id_seq OWNED BY public.gpxfiles.id;
 
 
 --
--- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.schema_migrations (
-    version character varying(128) NOT NULL
-);
-
-
---
 -- Name: segments; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -106,6 +97,28 @@ CREATE TABLE public.segments (
     id integer NOT NULL,
     track_id integer NOT NULL,
     geometry public.geometry
+);
+
+
+--
+-- Name: points; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.points AS
+ SELECT s.track_id,
+    public.st_x(s.geom) AS longitude,
+    public.st_y(s.geom) AS latitude
+   FROM ( SELECT (public.st_dumppoints(segments.geometry)).geom AS geom,
+            segments.track_id
+           FROM public.segments) s;
+
+
+--
+-- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.schema_migrations (
+    version character varying(128) NOT NULL
 );
 
 
@@ -333,4 +346,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241025092553'),
     ('20241102084123'),
     ('20241107112239'),
-    ('20241107141128');
+    ('20241107141128'),
+    ('20241108112311');

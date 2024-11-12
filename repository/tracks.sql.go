@@ -10,7 +10,7 @@ import (
 )
 
 const getTrack = `-- name: GetTrack :one
-select id, name, type, gpxfile_id from "public"."tracks" where id = $1
+select id, name, type, gpxfile_id, created_at from "public"."tracks" where id = $1
 `
 
 func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
@@ -21,8 +21,58 @@ func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
 		&i.Name,
 		&i.Type,
 		&i.GpxfileID,
+		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getTracks = `-- name: GetTracks :many
+SELECT 
+    t.id, t.name, t.type, t.gpxfile_id, t.created_at,
+    SUM(ST_Length(s.geometry::geography))::double precision AS track_length_meters
+FROM 
+    public.tracks t
+JOIN 
+    public.segments s ON t.id = s.track_id
+GROUP BY 
+    t.id
+ORDER BY 
+    t.created_at desc
+`
+
+type GetTracksRow struct {
+	Track             Track
+	TrackLengthMeters float64
+}
+
+func (q *Queries) GetTracks(ctx context.Context) ([]GetTracksRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTracks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTracksRow
+	for rows.Next() {
+		var i GetTracksRow
+		if err := rows.Scan(
+			&i.Track.ID,
+			&i.Track.Name,
+			&i.Track.Type,
+			&i.Track.GpxfileID,
+			&i.Track.CreatedAt,
+			&i.TrackLengthMeters,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const insertTrack = `-- name: InsertTrack :one

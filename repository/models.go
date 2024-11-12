@@ -132,6 +132,7 @@ type Track struct {
 	Name      string
 	Type      Tracktype
 	GpxfileID int32
+	CreatedAt time.Time
 }
 
 type User struct {

@@ -6,6 +6,20 @@ import (
 	"strconv"
 )
 
+func (h *Handler) ViewTracks(w http.ResponseWriter, r *http.Request) {
+	a := h.app
+
+	tracks, err := a.Repo(nil).GetTracks(r.Context())
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	if err := a.Render(w, "track/tracks.html", a.BaseTemplate(r).WithTracks(tracks)); err != nil {
+		a.ServerError(w, err)
+	}
+}
+
 func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 

@@ -32,7 +32,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// mux.HandleFunc("GET /{$}", root)
+	mux.HandleFunc("GET /{$}", handlers.ViewTracks)
 
 	mux.HandleFunc("GET /track/{id}", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/{id}/points", handlers.ViewTrackPoints)

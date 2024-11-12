@@ -1,0 +1,34 @@
+{{define "content"}}
+<div class="m-10 px-40">
+
+  <!-- Track Table -->
+  <div class="overflow-x-auto bg-white shadow-lg rounded-lg">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Name </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Length </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created
+            at </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+
+        <!-- Sample User Row -->
+        {{range .Tracks}}
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <a href="/track/{{.Track.ID}}" class="text-green-600 hover:text-green-900">{{.Track.Name}}</a>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.TrackLengthMeters | distance}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.Track.CreatedAt | time}}</td>
+        </tr>
+        {{ end }}
+
+      </tbody>
+    </table>
+  </div>
+</div>
+{{end}}

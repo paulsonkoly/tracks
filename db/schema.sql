@@ -161,7 +161,8 @@ CREATE TABLE public.tracks (
     id integer NOT NULL,
     name text DEFAULT ''::text NOT NULL,
     type public.tracktype NOT NULL,
-    gpxfile_id integer NOT NULL
+    gpxfile_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -347,4 +348,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241102084123'),
     ('20241107112239'),
     ('20241107141128'),
-    ('20241108112311');
+    ('20241108112311'),
+    ('20241112122207');

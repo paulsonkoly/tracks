@@ -4,8 +4,10 @@ package template
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -23,11 +25,20 @@ type Template struct {
 }
 
 var funcMap = template.FuncMap{
-	"bytes": bytes,
-	"time":  humanize.Time,
+	"bytes":    bytes,
+	"time":     humanize.Time,
+	"distance": distance,
 }
 
 func bytes(u int64) string { return humanize.Bytes(uint64(u)) }
+
+func distance(l float64) string {
+	if l > 1000 {
+		l = math.Round(l/100) / 10
+		return fmt.Sprintf("%v km", l)
+	}
+	return fmt.Sprintf("%v m", math.Round(l))
+}
 
 // New loads and precompiles all page templates.
 func New() Template {

@@ -17,6 +17,7 @@ var gpxFileTestData = [...]gpxFileTestDatum{
 	{"valid", "example.gpx", true},
 	{"empty", "", false},
 	{"special chars", "[UK] example (5).gpx", true},
+	{"numbers and spaces", "20240616 - 50k - Reading.gpx", true},
 	{"invalid chars", "!/what is it.gpx", false},
 	{"invalid extension", "example.gpx.txt", false},
 	{"no extension", "example", false},

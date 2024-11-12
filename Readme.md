@@ -39,4 +39,14 @@ air -d
 
 ## database
 
-dbmate is used for migrations and sqlc is used for database access.
+dbmate is used for migrations and sqlc is used for database access. To set up the database the following steps are required:
+
+  - set up a database role for the application and update .env file with the database url. 
+  - give super user privileges to the app user. This is required because we can't create the postgis extension otherwise.
+  - create the database with `dbmate create`
+  - run `dbmate load` to load schema into postgres.
+  - take away super user privileges from app user.
+
+### first admin user set up
+
+ Create a row in the `users` table with username `admin` and hashed_password `$2a$12$nmN0KvqozAaYm6CNOXDVQOJB1JDrQ0BjTgt2YTml/M6ebbggf48Ra`. Now you can log in with admin and password: 1234567. Navigate to `/users`, edit user and edit the username / password.

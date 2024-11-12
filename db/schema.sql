@@ -96,7 +96,7 @@ ALTER SEQUENCE public.gpxfiles_id_seq OWNED BY public.gpxfiles.id;
 CREATE TABLE public.segments (
     id integer NOT NULL,
     track_id integer NOT NULL,
-    geometry public.geometry
+    geometry public.geography(LineString,4326)
 );
 
 
@@ -108,7 +108,7 @@ CREATE VIEW public.points AS
  SELECT s.track_id,
     public.st_x(s.geom) AS longitude,
     public.st_y(s.geom) AS latitude
-   FROM ( SELECT (public.st_dumppoints(segments.geometry)).geom AS geom,
+   FROM ( SELECT (public.st_dumppoints((segments.geometry)::public.geometry)).geom AS geom,
             segments.track_id
            FROM public.segments) s;
 

@@ -35,6 +35,9 @@ var userEditTestData = [...]userTestDatum{
 type UserTestUnique struct{}
 
 func (u UserTestUnique) UserUnique(_ context.Context, _ string) (bool, error) { return true, nil }
+func (u UserTestUnique) UserUniqueExceptID(_ context.Context, _ int, _ string) (bool, error) {
+	return true, nil
+}
 
 func TestUserValidate(t *testing.T) {
 	testUserForm(t, "save", userTestData[:])

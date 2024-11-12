@@ -50,6 +50,27 @@ func (q *Queries) GetUserByName(ctx context.Context, username string) (User, err
 	return i, err
 }
 
+const getUserByNameNotID = `-- name: GetUserByNameNotID :one
+select id, username, hashed_password, created_at from users where username = $1 and id <> $2
+`
+
+type GetUserByNameNotIDParams struct {
+	Username string
+	ID       int32
+}
+
+func (q *Queries) GetUserByNameNotID(ctx context.Context, arg GetUserByNameNotIDParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByNameNotID, arg.Username, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.HashedPassword,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUsers = `-- name: GetUsers :many
 select id, username, hashed_password, created_at from users
 `

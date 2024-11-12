@@ -16,25 +16,42 @@ type User struct {
 
 // UserUniqueChecker checks if the user does not exist in the database.
 type UserUniqueChecker interface {
+	// Username is not yet in the database.
 	UserUnique(ctx context.Context, username string) (bool, error)
+
+	// Username is not yet in the database, except it is allowed to match user with id.
+	UserUniqueExceptID(ctx context.Context, id int, username string) (bool, error)
 }
 
 // Validate validates the user data.
 func (f *User) Validate(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
-	if err := f.validateUsername(ctx, uniq); err != nil {
+	f.validateUsername()
+
+	ok, err := uniq.UserUnique(ctx, f.Username)
+	if err != nil {
 		return false, err
 	}
+	if !ok {
+		f.AddError("User already exist.")
+	}
+
 	f.validatePassword()
 
 	return f.valid(), nil
 }
 
 // ValidateEdit validates the user data for editing. Empty data fields are not
-// updated, so they are valid.
+// updated, so they are valid. Username uniqueness is not validated *if* it's the same userid.
 func (f *User) ValidateEdit(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
 	if f.Username != "" {
-		if err := f.validateUsername(ctx, uniq); err != nil {
+		f.validateUsername()
+
+		ok, err := uniq.UserUniqueExceptID(ctx, f.ID, f.Username)
+		if err != nil {
 			return false, err
+		}
+		if !ok {
+			f.AddError("User already exist.")
 		}
 	}
 
@@ -45,20 +62,10 @@ func (f *User) ValidateEdit(ctx context.Context, uniq UserUniqueChecker) (bool, 
 	return f.valid(), nil
 }
 
-func (f *User) validateUsername(ctx context.Context, uniq UserUniqueChecker) error {
+func (f *User) validateUsername() {
 	if utf8.RuneCountInString(f.Username) < 3 {
 		f.AddFieldError("Username", "Username too short. Must be at least 3 characters long.")
 	}
-
-	ok, err := uniq.UserUnique(ctx, f.Username)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		f.AddError("User already exist.")
-	}
-
-	return nil
 }
 
 func (f *User) validatePassword() {

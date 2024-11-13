@@ -103,6 +103,7 @@ type Gpxfile struct {
 	// gpx metadata link field
 	Link      string
 	CreatedAt time.Time
+	UserID    int32
 }
 
 type Point struct {
@@ -133,6 +134,7 @@ type Track struct {
 	Type      Tracktype
 	GpxfileID int32
 	CreatedAt time.Time
+	UserID    int32
 }
 
 type User struct {

@@ -58,7 +58,8 @@ CREATE TABLE public.gpxfiles (
     filesize bigint NOT NULL,
     status public.filestatus NOT NULL,
     link text DEFAULT ''::text NOT NULL,
-    created_at timestamp with time zone NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    user_id integer NOT NULL
 );
 
 
@@ -162,7 +163,8 @@ CREATE TABLE public.tracks (
     name text DEFAULT ''::text NOT NULL,
     type public.tracktype NOT NULL,
     gpxfile_id integer NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    user_id integer NOT NULL
 );
 
 
@@ -318,6 +320,14 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 
 --
+-- Name: gpxfiles gpxfiles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gpxfiles
+    ADD CONSTRAINT gpxfiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: segments segments_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -331,6 +341,14 @@ ALTER TABLE ONLY public.segments
 
 ALTER TABLE ONLY public.tracks
     ADD CONSTRAINT tracks_gpxfile_id_fkey FOREIGN KEY (gpxfile_id) REFERENCES public.gpxfiles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: tracks tracks_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tracks
+    ADD CONSTRAINT tracks_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -349,4 +367,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241107112239'),
     ('20241107141128'),
     ('20241108112311'),
-    ('20241112122207');
+    ('20241112122207'),
+    ('20241113093721');

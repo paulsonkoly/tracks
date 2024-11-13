@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 )
 
 const deleteGPXFile = `-- name: DeleteGPXFile :one
@@ -21,7 +22,7 @@ func (q *Queries) DeleteGPXFile(ctx context.Context, id int32) (string, error) {
 }
 
 const getGPXFile = `-- name: GetGPXFile :one
-select id, filename, filesize, status, link, created_at from "public"."gpxfiles" where id = $1
+select id, filename, filesize, status, link, created_at, user_id from "public"."gpxfiles" where id = $1
 `
 
 func (q *Queries) GetGPXFile(ctx context.Context, id int32) (Gpxfile, error) {
@@ -34,12 +35,13 @@ func (q *Queries) GetGPXFile(ctx context.Context, id int32) (Gpxfile, error) {
 		&i.Status,
 		&i.Link,
 		&i.CreatedAt,
+		&i.UserID,
 	)
 	return i, err
 }
 
 const getGPXFileByFilename = `-- name: GetGPXFileByFilename :one
-select id, filename, filesize, status, link, created_at from "public"."gpxfiles" where filename = $1
+select id, filename, filesize, status, link, created_at, user_id from "public"."gpxfiles" where filename = $1
 `
 
 func (q *Queries) GetGPXFileByFilename(ctx context.Context, filename string) (Gpxfile, error) {
@@ -52,30 +54,50 @@ func (q *Queries) GetGPXFileByFilename(ctx context.Context, filename string) (Gp
 		&i.Status,
 		&i.Link,
 		&i.CreatedAt,
+		&i.UserID,
 	)
 	return i, err
 }
 
 const getGPXFiles = `-- name: GetGPXFiles :many
-select id, filename, filesize, status, link, created_at from "public"."gpxfiles" order by created_at desc
+select
+  f.id, f.filename, f.filesize, f.link, f.status, f.created_at,
+  u.id, u.username, u.hashed_password, u.created_at
+from "public"."gpxfiles" f
+join "public"."users" u on f."user_id" = u."id"
+order by f.created_at desc
 `
 
-func (q *Queries) GetGPXFiles(ctx context.Context) ([]Gpxfile, error) {
+type GetGPXFilesRow struct {
+	ID        int32
+	Filename  string
+	Filesize  int64
+	Link      string
+	Status    Filestatus
+	CreatedAt time.Time
+	User      User
+}
+
+func (q *Queries) GetGPXFiles(ctx context.Context) ([]GetGPXFilesRow, error) {
 	rows, err := q.db.QueryContext(ctx, getGPXFiles)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Gpxfile
+	var items []GetGPXFilesRow
 	for rows.Next() {
-		var i Gpxfile
+		var i GetGPXFilesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Filename,
 			&i.Filesize,
-			&i.Status,
 			&i.Link,
+			&i.Status,
 			&i.CreatedAt,
+			&i.User.ID,
+			&i.User.Username,
+			&i.User.HashedPassword,
+			&i.User.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -91,17 +113,23 @@ func (q *Queries) GetGPXFiles(ctx context.Context) ([]Gpxfile, error) {
 }
 
 const insertGPXFile = `-- name: InsertGPXFile :one
-insert into "public"."gpxfiles" (filename, filesize, link, status, created_at) values ($1, $2, $3, 'uploaded', Now()) returning id
+insert into "public"."gpxfiles" (filename, filesize, link, status, user_id, created_at) values ($1, $2, $3, 'uploaded', $4, Now()) returning id
 `
 
 type InsertGPXFileParams struct {
 	Filename string
 	Filesize int64
 	Link     string
+	UserID   int32
 }
 
 func (q *Queries) InsertGPXFile(ctx context.Context, arg InsertGPXFileParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, insertGPXFile, arg.Filename, arg.Filesize, arg.Link)
+	row := q.db.QueryRowContext(ctx, insertGPXFile,
+		arg.Filename,
+		arg.Filesize,
+		arg.Link,
+		arg.UserID,
+	)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

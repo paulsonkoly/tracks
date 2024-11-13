@@ -31,6 +31,7 @@ func (h *Handler) GPXFiles(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 	a := h.app
+	uid := a.CurrentUser(r.Context()).ID
 
 	var (
 		id    int32
@@ -88,6 +89,7 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 			repository.InsertGPXFileParams{
 				Filename: hdr.Filename,
 				Filesize: size,
+				UserID:   uid,
 				Link:     "TODO link text"})
 		if err != nil {
 			os.Remove(uPath)
@@ -107,7 +109,7 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 
 	// process uploaded file
 	if process {
-		go a.ProcessGPXFile(uPath, id)
+		go a.ProcessGPXFile(uPath, id, uid)
 	}
 }
 

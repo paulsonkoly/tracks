@@ -10,7 +10,7 @@ import (
 )
 
 const getTrack = `-- name: GetTrack :one
-select id, name, type, gpxfile_id, created_at from "public"."tracks" where id = $1
+select id, name, type, gpxfile_id, created_at, user_id from "public"."tracks" where id = $1
 `
 
 func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
@@ -22,26 +22,30 @@ func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
 		&i.Type,
 		&i.GpxfileID,
 		&i.CreatedAt,
+		&i.UserID,
 	)
 	return i, err
 }
 
 const getTracks = `-- name: GetTracks :many
 SELECT 
-    t.id, t.name, t.type, t.gpxfile_id, t.created_at,
+    t.id, t.name, t.type, t.gpxfile_id, t.created_at, t.user_id,
+    u.id, u.username, u.hashed_password, u.created_at,
     SUM(ST_Length(s.geometry::geography))::double precision AS track_length_meters
 FROM 
     public.tracks t
 JOIN 
     public.segments s ON t.id = s.track_id
+JOIN public.users u ON t.user_id = u.id
 GROUP BY 
-    t.id
+    t.id, u.id
 ORDER BY 
     t.created_at desc
 `
 
 type GetTracksRow struct {
 	Track             Track
+	User              User
 	TrackLengthMeters float64
 }
 
@@ -60,6 +64,11 @@ func (q *Queries) GetTracks(ctx context.Context) ([]GetTracksRow, error) {
 			&i.Track.Type,
 			&i.Track.GpxfileID,
 			&i.Track.CreatedAt,
+			&i.Track.UserID,
+			&i.User.ID,
+			&i.User.Username,
+			&i.User.HashedPassword,
+			&i.User.CreatedAt,
 			&i.TrackLengthMeters,
 		); err != nil {
 			return nil, err
@@ -76,17 +85,23 @@ func (q *Queries) GetTracks(ctx context.Context) ([]GetTracksRow, error) {
 }
 
 const insertTrack = `-- name: InsertTrack :one
-insert into "public"."tracks" (gpxfile_id, type, name) values ($1, $2, $3) returning id
+insert into "public"."tracks" (gpxfile_id, type, name, user_id) values ($1, $2, $3, $4) returning id
 `
 
 type InsertTrackParams struct {
 	GpxfileID int32
 	Type      Tracktype
 	Name      string
+	UserID    int32
 }
 
 func (q *Queries) InsertTrack(ctx context.Context, arg InsertTrackParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, insertTrack, arg.GpxfileID, arg.Type, arg.Name)
+	row := q.db.QueryRowContext(ctx, insertTrack,
+		arg.GpxfileID,
+		arg.Type,
+		arg.Name,
+		arg.UserID,
+	)
 	var id int32
 	err := row.Scan(&id)
 	return id, err

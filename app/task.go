@@ -15,7 +15,7 @@ import (
 // table, with status [repository.Filestatus]/uploaded. If the processing fails
 // the record will be updated with [repository.Filestatus]/ProcessingFailed,
 // otherwise [repository.Filestatus]/Processed.
-func (a *App) ProcessGPXFile(path string, id int32) {
+func (a *App) ProcessGPXFile(path string, id int32, uid int32) {
 	_ = a.WithTx(context.Background(), func(h TXHandle) error {
 		gpxF, err := gpx.ParseFile(path)
 		if err != nil {
@@ -24,7 +24,13 @@ func (a *App) ProcessGPXFile(path string, id int32) {
 
 		for _, track := range gpxF.Tracks {
 
-			tid, err := a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeTrack, Name: track.Name})
+			tid, err := a.Repo(h).InsertTrack(context.Background(),
+				repository.InsertTrackParams{
+					GpxfileID: id,
+					Type:      repository.TracktypeTrack,
+					Name:      track.Name,
+					UserID:    uid,
+				})
 			if err != nil {
 				goto Failed
 			}

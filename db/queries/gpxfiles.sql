@@ -1,5 +1,5 @@
 -- name: InsertGPXFile :one
-insert into "public"."gpxfiles" (filename, filesize, link, status, created_at) values ($1, $2, $3, 'uploaded', Now()) returning id;
+insert into "public"."gpxfiles" (filename, filesize, link, status, user_id, created_at) values ($1, $2, $3, 'uploaded', $4, Now()) returning id;
 
 -- name: GetGPXFile :one
 select * from "public"."gpxfiles" where id = $1;
@@ -8,7 +8,12 @@ select * from "public"."gpxfiles" where id = $1;
 select * from "public"."gpxfiles" where filename = $1;
 
 -- name: GetGPXFiles :many
-select * from "public"."gpxfiles" order by created_at desc;
+select
+  f.id, f.filename, f.filesize, f.link, f.status, f.created_at,
+  sqlc.embed(u)
+from "public"."gpxfiles" f
+join "public"."users" u on f."user_id" = u."id"
+order by f.created_at desc;
 
 -- name: DeleteGPXFile :one
 delete from "public"."gpxfiles" where id = $1 returning filename;

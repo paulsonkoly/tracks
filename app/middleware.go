@@ -10,14 +10,20 @@ import (
 	"github.com/justinas/nosurf"
 )
 
+// ContextKey is used to store data in the request context.
 type ContextKey string
 
+// CurrentUser is the context key for the currently logged in user if any. By
+// having the current user in the context we avoid loading it many times
+// throughout the lifespan of the request.
 var CurrentUser = ContextKey("CurrentUser")
 
+// StandardChain is a middleware to be used for every request that does not require further special treatment.
 func (a *App) StandardChain() alice.Chain {
 	return alice.New(a.Recover, a.Dynamic, a.LogRequest, a.Headers, a.NoSurf)
 }
 
+// Headers is a middleware that adds common http headers.
 func (a *App) Headers(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set(
@@ -34,6 +40,7 @@ func (a *App) Headers(next http.Handler) http.Handler {
 	})
 }
 
+// LogRequest is a middleware that logs the request.
 func (a *App) LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		a.logger.Info("request", "method", r.Method, "url", r.URL.Path, "remote", r.RemoteAddr)
@@ -41,6 +48,7 @@ func (a *App) LogRequest(next http.Handler) http.Handler {
 	})
 }
 
+// Dynamic is a middleware that enables sessions, and loads the current user.
 func (a *App) Dynamic(next http.Handler) http.Handler {
 	return alice.New(a.sm.LoadAndSave).ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
@@ -62,6 +70,7 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 	})
 }
 
+// NoSurf is a middleware that gives CSRF protection.
 func (a *App) NoSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 	csrfHandler.SetBaseCookie(http.Cookie{
@@ -72,6 +81,7 @@ func (a *App) NoSurf(next http.Handler) http.Handler {
 	return csrfHandler
 }
 
+// Recover is a middleware that catches any uncaught panic, and logs a backtrace.
 func (a *App) Recover(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -85,6 +95,7 @@ func (a *App) Recover(next http.Handler) http.Handler {
 	})
 }
 
+// RequiresLogIn is a middleware that enforces the user to be logged in.
 func (a *App) RequiresLogIn(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if nil == a.CurrentUser(r.Context()) {

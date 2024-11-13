@@ -9,10 +9,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ErrAuthenticationFailed indicates that either the username or the password was wrong.
 var ErrAuthenticationFailed = errors.New("authentication failed")
 
 const currentUserID = "currentUserID"
 
+// AuthenticateUser attempts a user login. I returns ErrAuthenticationFailed in
+// case of invalid credentials. It returns the logged in user in case of
+// successful login.
+//
+// The login is stored in the session for following requests, until a user
+// logout happens, or the session expires.
 func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*repository.User, error) {
 	user, err := a.Repo(nil).GetUserByName(ctx, name)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
@@ -37,6 +44,7 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 	return &user, nil
 }
 
+// ClearCurrentUser logs out the current user by removing it from the session.
 func (a *App) ClearCurrentUser(ctx context.Context) error {
 	a.sm.Remove(ctx, currentUserID)
 
@@ -47,6 +55,9 @@ func (a *App) ClearCurrentUser(ctx context.Context) error {
 	return nil
 }
 
+// CurrentUser returns the current user from the request context. This relies
+// on the [app.Dynamic] middleware to transfer the user from the session to the
+// request context.
 func (a *App) CurrentUser(ctx context.Context) *repository.User {
 	currentUser, ok := ctx.Value(CurrentUser).(repository.User)
 	if !ok {

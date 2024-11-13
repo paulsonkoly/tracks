@@ -32,7 +32,7 @@ func (f *User) Validate(ctx context.Context, uniq UserUniqueChecker) (bool, erro
 		return false, err
 	}
 	if !ok {
-		f.AddError("User already exist.")
+		f.AddError("Username taken.")
 	}
 
 	f.validatePassword()
@@ -51,7 +51,7 @@ func (f *User) ValidateEdit(ctx context.Context, uniq UserUniqueChecker) (bool, 
 			return false, err
 		}
 		if !ok {
-			f.AddError("User already exist.")
+			f.AddError("Username taken.")
 		}
 	}
 

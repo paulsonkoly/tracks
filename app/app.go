@@ -1,3 +1,4 @@
+// Package app provides the glue that holds the application together.
 package app
 
 import (
@@ -94,6 +95,8 @@ type Template interface {
 	Render(w io.Writer, name string, data any) error
 }
 
+// App is a container that holds parts of the application together. It
+// encapsulates a logger, transaction handling, session management etc.
 type App struct {
 	logger   Log
 	txdb     Transaction
@@ -102,21 +105,25 @@ type App struct {
 	decoder  fDecoder
 }
 
+// New creates a new application.
 func New(logger Log, dbtx Transaction, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
 	return &App{logger: logger, txdb: dbtx, sm: sm, template: tmpl, decoder: newDecoder()}
 }
 
+// ServerError logs the error happened and responds with 500.
 func (a *App) ServerError(w http.ResponseWriter, err error) {
 	a.logger.ServerError(err)
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
+// ClientError logs the error happened and responds with the status code.
 func (a *App) ClientError(w http.ResponseWriter, err error, status int) {
 	a.logger.ClientError(err, status)
 	http.Error(w, http.StatusText(status), status)
 }
 
+// LogAction logs the action happened. args are passed to the logger.
 func (a *App) LogAction(ctx context.Context, action string, args ...any) {
 	user := a.CurrentUser(ctx)
 	if user != nil {

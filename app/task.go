@@ -10,6 +10,11 @@ import (
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
+// ProcessGPXFile reads a GPX file pointed by path and loads the GPX data into
+// the database. It assumes that the file is already created in the gpxfiles
+// table, with status [repository.Filestatus]/uploaded. If the processing fails
+// the record will be updated with [repository.Filestatus]/ProcessingFailed,
+// otherwise [repository.Filestatus]/Processed.
 func (a *App) ProcessGPXFile(path string, id int32) {
 	_ = a.WithTx(context.Background(), func(h TXHandle) error {
 		gpxF, err := gpx.ParseFile(path)

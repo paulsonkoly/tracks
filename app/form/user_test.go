@@ -21,6 +21,7 @@ var userTestData = [...]userTestDatum{
 	{form.User{Username: "op", Password: "password", PasswordConfirm: "password"}, false, nil, map[string][]string{"Username": {"Username too short. Must be at least 3 characters long."}}},
 	{form.User{Username: "username", Password: "12345", PasswordConfirm: "12345"}, false, nil, map[string][]string{"Password": {"Password too short. Must be at least 6 characters long."}}},
 	{form.User{Username: "username", Password: "password", PasswordConfirm: "<PASSWORD>"}, false, nil, map[string][]string{"PasswordConfirm": {"Passwords do not match."}}},
+	{form.User{Username: "duplicate", Password: "password", PasswordConfirm: "password"}, false, []string{"Username taken."}, nil},
 }
 
 var userEditTestData = [...]userTestDatum{
@@ -30,13 +31,16 @@ var userEditTestData = [...]userTestDatum{
 	{form.User{Username: "username", Password: "", PasswordConfirm: ""}, true, nil, nil},
 	{form.User{Username: "username", Password: "", PasswordConfirm: "<PASSWORD>"}, false, nil, map[string][]string{"Password": {"Password too short. Must be at least 6 characters long."}, "PasswordConfirm": {"Passwords do not match."}}},
 	{form.User{Username: "username", Password: "password", PasswordConfirm: ""}, false, nil, map[string][]string{"PasswordConfirm": {"Passwords do not match."}}},
+	{form.User{Username: "duplicate", Password: "password", PasswordConfirm: "password"}, false, []string{"Username taken."}, nil},
 }
 
 type UserTestUnique struct{}
 
-func (u UserTestUnique) UserUnique(_ context.Context, _ string) (bool, error) { return true, nil }
-func (u UserTestUnique) UserUniqueExceptID(_ context.Context, _ int, _ string) (bool, error) {
-	return true, nil
+func (u UserTestUnique) UserUnique(_ context.Context, username string) (bool, error) {
+	return username != "duplicate", nil
+}
+func (u UserTestUnique) UserUniqueExceptID(_ context.Context, _ int, username string) (bool, error) {
+	return username != "duplicate", nil
 }
 
 func TestUserValidate(t *testing.T) {

@@ -12,14 +12,9 @@
       <!-- Centre - Nav Links -->
       <div class="md:flex space-x-8">
         {{with .CurrentUser}}
-        <a href="/gpxfiles" class="text-white hover:text-gray-200">Files</a>
+          <a href="/gpxfiles" class="text-white hover:text-gray-200">Files</a>
+          <a href="/users" class="text-white hover:text-gray-200">Users</a>
         {{end}}
-        <a href="#" class="text-white hover:text-gray-200">Home</a>
-        <a href="#" class="text-white hover:text-gray-200">About</a>
-        {{with .CurrentUser}}
-        <a href="/users" class="text-white hover:text-gray-200">Users</a>
-        {{end}}
-        <a href="#" class="text-white hover:text-gray-200">Contact</a>
       </div>
       <!-- Login/Logout -->
       <div class="flex items-center space-x-4">

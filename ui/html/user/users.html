@@ -31,7 +31,7 @@
         <tr>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.ID}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.Username}}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{.CreatedAt | time}}</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-4">
             <!-- Edit Button -->
             <a href="/user/{{.ID}}/edit" class="text-blue-600 hover:text-blue-900">Edit</a>

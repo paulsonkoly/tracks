@@ -16,12 +16,12 @@ type GPXFileUniqueChecker interface {
 	GPXFileUnique(ctx context.Context, filename string) (bool, error)
 }
 
-var filenameRexp = regexp.MustCompile(`^([-+%a-zA-Z0-9\[\]\(\)\{\}_ ]+).gpx$`)
+var filenameRexp = regexp.MustCompile(`^([-+%a-zA-Z0-9\[\]\(\)\{\}_ .]+).gpx$`)
 
 // Validate validates the data associated with a GPX file upload.
 func (f *GPXFile) Validate(ctx context.Context, uniq GPXFileUniqueChecker) (bool, error) {
 	if !filenameRexp.MatchString(f.Filename) {
-		f.AddFieldError("Filename", "Invalid filename. Allowed characters: -, +, %, a-Z, 0-9, [, ], (, ), {, }, _, \" \".")
+		f.AddFieldError("Filename", "Invalid filename. Allowed characters: -, +, %, a-Z, 0-9, [, ], (, ), {, }, _, ., \" \".")
 	}
 
 	ok, err := uniq.GPXFileUnique(ctx, f.Filename)

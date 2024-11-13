@@ -20,6 +20,7 @@ var gpxFileTestData = [...]gpxFileTestDatum{
 	{"numbers and spaces", "20240616 - 50k - Reading.gpx", true},
 	{"invalid chars", "!/what is it.gpx", false},
 	{"invalid extension", "example.gpx.txt", false},
+	{"multiple extensions", "example.txt.gpx", true},
 	{"no extension", "example", false},
 }
 

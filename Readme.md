@@ -1,6 +1,6 @@
 # Tracks
 
-An open source web application for displaying and managing GPX tracks.
+An open source web application for displaying and managing GPX tracks. [demo](https://tracks.alwaysdata.net)
 
 ## Development setup
 

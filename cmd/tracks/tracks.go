@@ -56,7 +56,7 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("GET /static/", http.StripPrefix("/static", fs))
 
-	err = http.ListenAndServe("0.0.0.0:9999", app.StandardChain().Then(mux))
+	err = http.ListenAndServe(serverAddr(), app.StandardChain().Then(mux))
 	if err != nil {
 		panic(err)
 	}
@@ -79,4 +79,12 @@ func openDB() *sql.DB {
 	}
 
 	return db
+}
+
+func serverAddr() string {
+	serverAddr := os.Getenv("SERVER_ADDR")
+	if serverAddr == "" {
+		return "0.0.0.0:9999"
+	}
+	return serverAddr
 }

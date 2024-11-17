@@ -28,7 +28,7 @@ function getTrackId() {
 // Function to fetch data from a JSON endpoint
 async function fetchGPSTrack(map) {
   try {
-    const response = await fetch('http://localhost:9999/track/' + getTrackId() + '/points'); // Replace with your JSON endpoint URL
+    const response = await fetch('/track/' + getTrackId() + '/points'); // Replace with your JSON endpoint URL
     const jsonData = await response.json();
 
     // Create a LineString from the fetched data

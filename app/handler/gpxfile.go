@@ -90,7 +90,7 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 				Filename: hdr.Filename,
 				Filesize: size,
 				UserID:   uid,
-				Link:     "TODO link text"})
+			})
 		if err != nil {
 			os.Remove(uPath)
 			return err

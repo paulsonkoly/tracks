@@ -7,6 +7,18 @@
       </h2>
     </div>
     <div id="map" class="h-[70vh] bg-yellow-100"></div>
+    <div class="m-4 min-h-4">
+      <div class="float-root">
+        <div class="float-left">
+          {{.Track.TrackLengthMeters | distance}}
+        </div>
+        {{if .Track.Time.Valid}}
+        <div class="float-right italic">
+          {{.Track.Time.Time}}
+        </div>
+        {{end}}
+      </div>
+      &nbsp;
+    </div>
   </div>
-</div>
-{{end}}
+  {{end}}

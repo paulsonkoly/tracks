@@ -59,7 +59,23 @@ CREATE TABLE public.gpxfiles (
     status public.filestatus NOT NULL,
     link text DEFAULT ''::text NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    user_id integer NOT NULL
+    user_id integer NOT NULL,
+    version text,
+    creator text,
+    name text,
+    description text,
+    author_name text,
+    author_email text,
+    author_link text,
+    author_link_text text,
+    author_link_type text,
+    copyright text,
+    copyright_year text,
+    copyright_license text,
+    link_text text,
+    link_type text,
+    "time" timestamp with time zone,
+    keywords text
 );
 
 
@@ -368,4 +384,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241107141128'),
     ('20241108112311'),
     ('20241112122207'),
-    ('20241113093721');
+    ('20241113093721'),
+    ('20241118083328');

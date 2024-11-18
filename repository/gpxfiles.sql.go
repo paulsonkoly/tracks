@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func (q *Queries) DeleteGPXFile(ctx context.Context, id int32) (string, error) {
 }
 
 const getGPXFile = `-- name: GetGPXFile :one
-select id, filename, filesize, status, link, created_at, user_id from "public"."gpxfiles" where id = $1
+select id, filename, filesize, status, link, created_at, user_id, version, creator, name, description, author_name, author_email, author_link, author_link_text, author_link_type, copyright, copyright_year, copyright_license, link_text, link_type, time, keywords from "public"."gpxfiles" where id = $1
 `
 
 func (q *Queries) GetGPXFile(ctx context.Context, id int32) (Gpxfile, error) {
@@ -36,12 +37,28 @@ func (q *Queries) GetGPXFile(ctx context.Context, id int32) (Gpxfile, error) {
 		&i.Link,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.Version,
+		&i.Creator,
+		&i.Name,
+		&i.Description,
+		&i.AuthorName,
+		&i.AuthorEmail,
+		&i.AuthorLink,
+		&i.AuthorLinkText,
+		&i.AuthorLinkType,
+		&i.Copyright,
+		&i.CopyrightYear,
+		&i.CopyrightLicense,
+		&i.LinkText,
+		&i.LinkType,
+		&i.Time,
+		&i.Keywords,
 	)
 	return i, err
 }
 
 const getGPXFileByFilename = `-- name: GetGPXFileByFilename :one
-select id, filename, filesize, status, link, created_at, user_id from "public"."gpxfiles" where filename = $1
+select id, filename, filesize, status, link, created_at, user_id, version, creator, name, description, author_name, author_email, author_link, author_link_text, author_link_type, copyright, copyright_year, copyright_license, link_text, link_type, time, keywords from "public"."gpxfiles" where filename = $1
 `
 
 func (q *Queries) GetGPXFileByFilename(ctx context.Context, filename string) (Gpxfile, error) {
@@ -55,6 +72,22 @@ func (q *Queries) GetGPXFileByFilename(ctx context.Context, filename string) (Gp
 		&i.Link,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.Version,
+		&i.Creator,
+		&i.Name,
+		&i.Description,
+		&i.AuthorName,
+		&i.AuthorEmail,
+		&i.AuthorLink,
+		&i.AuthorLinkText,
+		&i.AuthorLinkType,
+		&i.Copyright,
+		&i.CopyrightYear,
+		&i.CopyrightLicense,
+		&i.LinkText,
+		&i.LinkType,
+		&i.Time,
+		&i.Keywords,
 	)
 	return i, err
 }
@@ -113,23 +146,17 @@ func (q *Queries) GetGPXFiles(ctx context.Context) ([]GetGPXFilesRow, error) {
 }
 
 const insertGPXFile = `-- name: InsertGPXFile :one
-insert into "public"."gpxfiles" (filename, filesize, link, status, user_id, created_at) values ($1, $2, $3, 'uploaded', $4, Now()) returning id
+insert into "public"."gpxfiles" (filename, filesize,  status, user_id, created_at) values ($1, $2, 'uploaded', $3, Now()) returning id
 `
 
 type InsertGPXFileParams struct {
 	Filename string
 	Filesize int64
-	Link     string
 	UserID   int32
 }
 
 func (q *Queries) InsertGPXFile(ctx context.Context, arg InsertGPXFileParams) (int32, error) {
-	row := q.db.QueryRowContext(ctx, insertGPXFile,
-		arg.Filename,
-		arg.Filesize,
-		arg.Link,
-		arg.UserID,
-	)
+	row := q.db.QueryRowContext(ctx, insertGPXFile, arg.Filename, arg.Filesize, arg.UserID)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -146,5 +173,72 @@ type SetGPXFileStatusParams struct {
 
 func (q *Queries) SetGPXFileStatus(ctx context.Context, arg SetGPXFileStatusParams) error {
 	_, err := q.db.ExecContext(ctx, setGPXFileStatus, arg.Status, arg.ID)
+	return err
+}
+
+const updateGPXFile = `-- name: UpdateGPXFile :exec
+update "public"."gpxfiles" set
+version=$2,
+creator=$3,
+name=$4,
+description=$5,
+author_name=$6,
+author_email=$7,
+author_link=$8,
+author_link_text=$9,
+author_link_type=$10,
+copyright=$11,
+copyright_year=$12,
+copyright_license=$13,
+link=$14,
+link_text=$15,
+link_type=$16,
+time=$17,
+keywords=$18
+where id = $1
+`
+
+type UpdateGPXFileParams struct {
+	ID               int32
+	Version          sql.NullString
+	Creator          sql.NullString
+	Name             sql.NullString
+	Description      sql.NullString
+	AuthorName       sql.NullString
+	AuthorEmail      sql.NullString
+	AuthorLink       sql.NullString
+	AuthorLinkText   sql.NullString
+	AuthorLinkType   sql.NullString
+	Copyright        sql.NullString
+	CopyrightYear    sql.NullString
+	CopyrightLicense sql.NullString
+	Link             string
+	LinkText         sql.NullString
+	LinkType         sql.NullString
+	Time             sql.NullTime
+	Keywords         sql.NullString
+}
+
+func (q *Queries) UpdateGPXFile(ctx context.Context, arg UpdateGPXFileParams) error {
+	_, err := q.db.ExecContext(ctx, updateGPXFile,
+		arg.ID,
+		arg.Version,
+		arg.Creator,
+		arg.Name,
+		arg.Description,
+		arg.AuthorName,
+		arg.AuthorEmail,
+		arg.AuthorLink,
+		arg.AuthorLinkText,
+		arg.AuthorLinkType,
+		arg.Copyright,
+		arg.CopyrightYear,
+		arg.CopyrightLicense,
+		arg.Link,
+		arg.LinkText,
+		arg.LinkType,
+		arg.Time,
+		arg.Keywords,
+	)
 	return err
 }

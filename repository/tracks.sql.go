@@ -7,15 +7,36 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"time"
 )
 
 const getTrack = `-- name: GetTrack :one
-select id, name, type, gpxfile_id, created_at, user_id from "public"."tracks" where id = $1
+select
+   t.id, t.name, t.type, t.gpxfile_id, t.created_at, t.user_id,
+   f.time,
+  SUM(ST_Length(s.geometry::geography))::double precision AS track_length_meters
+from "public"."tracks" t
+join "public"."gpxfiles" f on t.gpxfile_id = f.id
+join public.segments s ON t.id = s.track_id
+where t.id = $1
+group by t.id, f.time
 `
 
-func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
+type GetTrackRow struct {
+	ID                int32
+	Name              string
+	Type              Tracktype
+	GpxfileID         int32
+	CreatedAt         time.Time
+	UserID            int32
+	Time              sql.NullTime
+	TrackLengthMeters float64
+}
+
+func (q *Queries) GetTrack(ctx context.Context, id int32) (GetTrackRow, error) {
 	row := q.db.QueryRowContext(ctx, getTrack, id)
-	var i Track
+	var i GetTrackRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -23,6 +44,8 @@ func (q *Queries) GetTrack(ctx context.Context, id int32) (Track, error) {
 		&i.GpxfileID,
 		&i.CreatedAt,
 		&i.UserID,
+		&i.Time,
+		&i.TrackLengthMeters,
 	)
 	return i, err
 }

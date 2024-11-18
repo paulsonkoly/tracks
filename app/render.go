@@ -13,7 +13,7 @@ const flashKey = "flash"
 type renderData struct {
 	Users       []repository.User
 	GPXFiles    []repository.GetGPXFilesRow
-	Track       repository.Track
+	Track       repository.GetTrackRow
 	Tracks      []repository.GetTracksRow
 	Form        any
 	Flash       Flash
@@ -48,7 +48,7 @@ func (r renderData) WithGPXFiles(files []repository.GetGPXFilesRow) renderData {
 	return r
 }
 
-func (r renderData) WithTrack(track repository.Track) renderData {
+func (r renderData) WithTrack(track repository.GetTrackRow) renderData {
 	r.Track = track
 	return r
 }

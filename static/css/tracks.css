@@ -624,6 +624,14 @@ video {
   top: 0px;
 }
 
+.float-right {
+  float: right;
+}
+
+.float-left {
+  float: left;
+}
+
 .m-10 {
   margin: 2.5rem;
 }
@@ -687,6 +695,10 @@ video {
 
 .min-h-screen {
   min-height: 100vh;
+}
+
+.min-h-4 {
+  min-height: 1rem;
 }
 
 .w-6 {

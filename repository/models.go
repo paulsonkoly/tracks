@@ -5,6 +5,7 @@
 package repository
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -101,9 +102,25 @@ type Gpxfile struct {
 	Filesize int64
 	Status   Filestatus
 	// gpx metadata link field
-	Link      string
-	CreatedAt time.Time
-	UserID    int32
+	Link             string
+	CreatedAt        time.Time
+	UserID           int32
+	Version          sql.NullString
+	Creator          sql.NullString
+	Name             sql.NullString
+	Description      sql.NullString
+	AuthorName       sql.NullString
+	AuthorEmail      sql.NullString
+	AuthorLink       sql.NullString
+	AuthorLinkText   sql.NullString
+	AuthorLinkType   sql.NullString
+	Copyright        sql.NullString
+	CopyrightYear    sql.NullString
+	CopyrightLicense sql.NullString
+	LinkText         sql.NullString
+	LinkType         sql.NullString
+	Time             sql.NullTime
+	Keywords         sql.NullString
 }
 
 type Point struct {

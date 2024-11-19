@@ -1,7 +1,6 @@
 package form_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/paulsonkoly/tracks/app/form"
@@ -26,14 +25,14 @@ var gpxFileTestData = [...]gpxFileTestDatum{
 
 type gpxFileTestUnique struct{}
 
-func (u gpxFileTestUnique) GPXFileUnique(_ context.Context, _ string) (bool, error) { return true, nil }
+func (u gpxFileTestUnique) GPXFileUnique(_ string) (bool, error) { return true, nil }
 
 func TestFileValidate(t *testing.T) {
 	for _, test := range gpxFileTestData {
 		t.Run(test.name, func(t *testing.T) {
 			form := form.GPXFile{Filename: test.fileName}
 
-			result, err := form.Validate(context.Background(), gpxFileTestUnique{})
+			result, err := form.Validate(gpxFileTestUnique{})
 			if err != nil {
 				t.Errorf("File{Filename: %q}.Validate() returned error: %v", form.Filename, err)
 			}

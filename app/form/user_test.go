@@ -1,7 +1,6 @@
 package form_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -36,10 +35,10 @@ var userEditTestData = [...]userTestDatum{
 
 type UserTestUnique struct{}
 
-func (u UserTestUnique) UserUnique(_ context.Context, username string) (bool, error) {
+func (u UserTestUnique) UserUnique(username string) (bool, error) {
 	return username != "duplicate", nil
 }
-func (u UserTestUnique) UserUniqueExceptID(_ context.Context, _ int, username string) (bool, error) {
+func (u UserTestUnique) UserUniqueExceptID(_ int, username string) (bool, error) {
 	return username != "duplicate", nil
 }
 
@@ -64,9 +63,9 @@ func testUserForm(t *testing.T, op string, testData []userTestDatum) {
 
 			switch op {
 			case "save":
-				result, err = f.Validate(context.Background(), UserTestUnique{})
+				result, err = f.Validate(UserTestUnique{})
 			case "edit":
-				result, err = f.ValidateEdit(context.Background(), UserTestUnique{})
+				result, err = f.ValidateEdit(UserTestUnique{})
 			}
 
 			assert.NoError(t, err)

@@ -13,8 +13,8 @@ import (
 	"github.com/paulsonkoly/tracks/app/log/slog"
 	"github.com/paulsonkoly/tracks/app/session_manager/scs"
 	"github.com/paulsonkoly/tracks/app/template"
-	"github.com/paulsonkoly/tracks/app/tx"
 	"github.com/paulsonkoly/tracks/repository"
+	"github.com/paulsonkoly/tracks/repository/sqlc"
 )
 
 func main() {
@@ -26,7 +26,10 @@ func main() {
 	db := openDB()
 	defer db.Close()
 
-	app := app.New(slog.New(), tx.New(repository.New(db), db), scs.New(db), template.New())
+	queries := sqlc.New(db)
+	repo := repository.New(queries, db)
+
+	app := app.New(slog.New(), &repo, scs.New(db), template.New())
 
 	handlers := handler.New(app)
 

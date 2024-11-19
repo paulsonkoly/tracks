@@ -21,7 +21,7 @@ const currentUserID = "currentUserID"
 // The login is stored in the session for following requests, until a user
 // logout happens, or the session expires.
 func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*repository.User, error) {
-	user, err := a.Repo(nil).GetUserByName(ctx, name)
+	user, err := a.Q(ctx).GetUserByName(name)
 	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrAuthenticationFailed
 	} else if err != nil {

@@ -1,7 +1,6 @@
 package form
 
 import (
-	"context"
 	"unicode/utf8"
 )
 
@@ -17,17 +16,17 @@ type User struct {
 // UserUniqueChecker checks if the user does not exist in the database.
 type UserUniqueChecker interface {
 	// Username is not yet in the database.
-	UserUnique(ctx context.Context, username string) (bool, error)
+	UserUnique(username string) (bool, error)
 
 	// Username is not yet in the database, except it is allowed to match user with id.
-	UserUniqueExceptID(ctx context.Context, id int, username string) (bool, error)
+	UserUniqueExceptID(id int, username string) (bool, error)
 }
 
 // Validate validates the user data.
-func (f *User) Validate(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
+func (f *User) Validate(uniq UserUniqueChecker) (bool, error) {
 	f.validateUsername()
 
-	ok, err := uniq.UserUnique(ctx, f.Username)
+	ok, err := uniq.UserUnique(f.Username)
 	if err != nil {
 		return false, err
 	}
@@ -42,11 +41,11 @@ func (f *User) Validate(ctx context.Context, uniq UserUniqueChecker) (bool, erro
 
 // ValidateEdit validates the user data for editing. Empty data fields are not
 // updated, so they are valid. Username uniqueness is not validated *if* it's the same userid.
-func (f *User) ValidateEdit(ctx context.Context, uniq UserUniqueChecker) (bool, error) {
+func (f *User) ValidateEdit(uniq UserUniqueChecker) (bool, error) {
 	if f.Username != "" {
 		f.validateUsername()
 
-		ok, err := uniq.UserUniqueExceptID(ctx, f.ID, f.Username)
+		ok, err := uniq.UserUniqueExceptID(f.ID, f.Username)
 		if err != nil {
 			return false, err
 		}

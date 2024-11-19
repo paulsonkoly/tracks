@@ -9,7 +9,7 @@ import (
 func (h *Handler) ViewTracks(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
-	tracks, err := a.Repo(nil).GetTracks(r.Context())
+	tracks, err := a.Q(r.Context()).GetTracks()
 	if err != nil {
 		a.ServerError(w, err)
 		return
@@ -29,7 +29,7 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	track, err := a.Repo(nil).GetTrack(r.Context(), int32(id))
+	track, err := a.Q(r.Context()).GetTrack(id)
 	if err != nil {
 		a.ServerError(w, err)
 		return
@@ -49,7 +49,7 @@ func (h *Handler) ViewTrackPoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	points, err := a.Repo(nil).GetTrackSegmentPoints(r.Context(), int32(id))
+	points, err := a.Q(r.Context()).GetTrackPoints(id)
 	if err != nil {
 		a.ServerError(w, err)
 		return

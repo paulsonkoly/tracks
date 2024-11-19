@@ -2,13 +2,10 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-	"fmt"
-	"strings"
-	"time"
 
 	"github.com/paulsonkoly/tracks/repository"
+	"github.com/paulsonkoly/tracks/repository/sqlc"
 	"github.com/tkrajina/gpxgo/gpx"
 )
 
@@ -17,62 +14,51 @@ import (
 // table, with status [repository.Filestatus]/uploaded. If the processing fails
 // the record will be updated with [repository.Filestatus]/ProcessingFailed,
 // otherwise [repository.Filestatus]/Processed.
-func (a *App) ProcessGPXFile(path string, id int32, uid int32) {
-	_ = a.WithTx(context.Background(), func(h TXHandle) error {
+func (a *App) ProcessGPXFile(path string, id int, uid int) {
+	_ = a.WithTx(context.Background(), func(ctx context.Context) error {
 		gpxF, err := gpx.ParseFile(path)
 		if err != nil {
 			goto Failed
 		}
 
-		err = a.Repo(h).UpdateGPXFile(context.Background(),
+		err = a.Q(ctx).UpdateGPXFile(
 			repository.UpdateGPXFileParams{
 				ID:               id,
-				Version:          nullString(gpxF.Version),
-				Creator:          nullString(gpxF.Creator),
-				Name:             nullString(gpxF.Name),
-				Description:      nullString(gpxF.Description),
-				AuthorName:       nullString(gpxF.AuthorName),
-				AuthorEmail:      nullString(gpxF.AuthorEmail),
-				AuthorLink:       nullString(gpxF.AuthorLink),
-				AuthorLinkText:   nullString(gpxF.AuthorLinkText),
-				AuthorLinkType:   nullString(gpxF.AuthorLinkType),
-				Copyright:        nullString(gpxF.Copyright),
-				CopyrightYear:    nullString(gpxF.CopyrightYear),
-				CopyrightLicense: nullString(gpxF.CopyrightLicense),
-				LinkText:         nullString(gpxF.LinkText),
-				LinkType:         nullString(gpxF.LinkType),
-				Time:             nullTime(gpxF.Time),
-				Keywords:         nullString(gpxF.Keywords),
+				Version:          &gpxF.Version,
+				Creator:          &gpxF.Creator,
+				Name:             &gpxF.Name,
+				Description:      &gpxF.Description,
+				AuthorName:       &gpxF.AuthorName,
+				AuthorEmail:      &gpxF.AuthorEmail,
+				AuthorLink:       &gpxF.AuthorLink,
+				AuthorLinkText:   &gpxF.AuthorLinkText,
+				AuthorLinkType:   &gpxF.AuthorLinkType,
+				Copyright:        &gpxF.Copyright,
+				CopyrightYear:    &gpxF.CopyrightYear,
+				CopyrightLicense: &gpxF.CopyrightLicense,
+				LinkText:         &gpxF.LinkText,
+				LinkType:         &gpxF.LinkType,
+				Time:             gpxF.Time,
+				Keywords:         &gpxF.Keywords,
 			})
 		if err != nil {
 			goto Failed
 		}
 
 		for _, track := range gpxF.Tracks {
-			tid, err := a.Repo(h).InsertTrack(context.Background(),
-				repository.InsertTrackParams{
-					GpxfileID: id,
-					Type:      repository.TracktypeTrack,
-					Name:      track.Name,
-					UserID:    uid,
-				})
+			tid, err := a.Q(ctx).InsertTrack(id, sqlc.TracktypeTrack, track.Name, uid)
 			if err != nil {
 				goto Failed
 			}
 
 			for _, segment := range track.Segments {
+				points := []repository.Point{}
 
-				gBuilder := strings.Builder{}
-				gBuilder.WriteString("LINESTRING(")
-				for ix, point := range segment.Points {
-					if ix > 0 {
-						gBuilder.WriteString(", ")
-					}
-					gBuilder.WriteString(fmt.Sprintf("%f %f", point.Longitude, point.Latitude))
+				for _, point := range segment.Points {
+					points = append(points, repository.Point{Latitude: point.Latitude, Longitude: point.Longitude})
 				}
-				gBuilder.WriteString(")")
 
-				err = a.Repo(h).InsertSegment(context.Background(), repository.InsertSegmentParams{TrackID: tid, Geometry: gBuilder.String()})
+				err = a.Q(ctx).InsertTrackSegment(tid, points)
 				if err != nil {
 					goto Failed
 				}
@@ -80,46 +66,28 @@ func (a *App) ProcessGPXFile(path string, id int32, uid int32) {
 		}
 
 		for _, route := range gpxF.Routes {
-			tid, err := a.Repo(h).InsertTrack(context.Background(), repository.InsertTrackParams{GpxfileID: id, Type: repository.TracktypeRoute, Name: route.Name})
+			tid, err := a.Q(ctx).InsertTrack(id, sqlc.TracktypeRoute, route.Name, uid)
 			if err != nil {
 				goto Failed
 			}
 
-			gBuilder := strings.Builder{}
-			gBuilder.WriteString("LINESTRING(")
-			for ix, point := range route.Points {
-				if ix > 0 {
-					gBuilder.WriteString(", ")
-				}
-				gBuilder.WriteString(fmt.Sprintf("%f %f", point.Longitude, point.Latitude))
+			points := []repository.Point{}
+			for _, point := range route.Points {
+				points = append(points, repository.Point{Latitude: point.Latitude, Longitude: point.Longitude})
 			}
-			gBuilder.WriteString(")")
 
-			err = a.Repo(h).InsertSegment(context.Background(), repository.InsertSegmentParams{TrackID: tid, Geometry: gBuilder.String()})
+			err = a.Q(ctx).InsertTrackSegment(tid, points)
 			if err != nil {
 				goto Failed
 			}
 		}
 
-		err = a.Repo(h).SetGPXFileStatus(context.Background(), repository.SetGPXFileStatusParams{ID: id, Status: repository.FilestatusProcessed})
+		err = a.Q(ctx).SetGPXFileStatus(id, sqlc.FilestatusProcessed)
 		return err
 
 	Failed:
-		err2 := a.Repo(h).SetGPXFileStatus(context.Background(), repository.SetGPXFileStatusParams{ID: id, Status: repository.FilestatusProcessingFailed})
+		// this is outside of the transaction we roll back
+		err2 := a.Q(context.Background()).SetGPXFileStatus(id, sqlc.FilestatusProcessingFailed)
 		return errors.Join(err, err2)
 	})
-}
-
-func nullString(s string) sql.NullString {
-	if s == "" {
-		return sql.NullString{}
-	}
-	return sql.NullString{String: s, Valid: true}
-}
-
-func nullTime(t *time.Time) sql.NullTime {
-	if t == nil {
-		return sql.NullTime{}
-	}
-	return sql.NullTime{Time: *t, Valid: true}
 }

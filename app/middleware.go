@@ -53,8 +53,8 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 	return alice.New(a.sm.LoadAndSave).ThenFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		if uid, ok := a.sm.Get(ctx, currentUserID).(int32); ok {
-			user, err := a.Repo(nil).GetUser(ctx, uid)
+		if uid, ok := a.sm.Get(ctx, currentUserID).(int); ok {
+			user, err := a.Q(ctx).GetUser(uid)
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				a.ServerError(w, err)
 				return

@@ -6,7 +6,7 @@ sql:
     schema: "db/schema.sql"
     gen:
       go:
-        package: "repository"
-        out: "repository"
+        package: "sqlc"
+        out: "repository/sqlc"
         sql_package: "database/sql"
 

@@ -22,11 +22,11 @@
         {{range .Tracks}}
         <tr>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            <a href="/track/{{.Track.ID}}" class="text-green-600 hover:text-green-900">{{.Track.Name}}</a>
+            <a href="/track/{{.ID}}" class="text-green-600 hover:text-green-900">{{.Name}}</a>
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.User.Username}}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.TrackLengthMeters | distance}}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.Track.CreatedAt | time}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.LengthMeters | distance}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{.CreatedAt | time}}</td>
         </tr>
         {{ end }}
 

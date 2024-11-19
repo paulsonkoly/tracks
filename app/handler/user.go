@@ -9,8 +9,8 @@ import (
 
 	"github.com/paulsonkoly/tracks/app"
 	"github.com/paulsonkoly/tracks/app/form"
-	"github.com/paulsonkoly/tracks/repository"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/net/context"
 )
 
 // ViewUserLogin renders the login page.
@@ -55,7 +55,7 @@ func (h *Handler) PostUserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// succesfull login
-	a.LogAction(r.Context(), "user login", slog.Int("id", int(user.ID)))
+	a.LogAction(r.Context(), "user login", slog.Int("id", user.ID))
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
@@ -77,7 +77,7 @@ func (h *Handler) PostUserLogout(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ViewUsers(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
-	users, err := a.Repo(nil).GetUsers(r.Context())
+	users, err := a.Q(r.Context()).GetUsers()
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		a.ServerError(w, err)
 		return
@@ -112,9 +112,9 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := a.WithTx(r.Context(), func(h app.TXHandle) error {
+	err := a.WithTx(r.Context(), func(ctx context.Context) error {
 
-		ok, err := newUserForm.Validate(r.Context(), a.Repo(h))
+		ok, err := newUserForm.Validate(a.Q(ctx))
 		if err != nil {
 			return err
 		}
@@ -127,19 +127,17 @@ func (h *Handler) PostNewUser(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 
-		insert := repository.InsertUserParams{Username: newUserForm.Username}
 		hash, err := bcrypt.GenerateFromPassword([]byte(newUserForm.Password), 12)
 		if err != nil {
 			return err
 		}
-		insert.HashedPassword = string(hash)
 
-		if _, err := a.Repo(h).InsertUser(r.Context(), insert); err != nil {
+		if _, err := a.Q(ctx).InsertUser(newUserForm.Username, string(hash)); err != nil {
 			return err
 		}
 
-		a.FlashInfo(r.Context(), "User created.")
-		a.LogAction(r.Context(), "user created", slog.String("username", insert.Username))
+		a.FlashInfo(ctx, "User created.")
+		a.LogAction(ctx, "user created", slog.String("username", newUserForm.Username))
 		http.Redirect(w, r, "/users", http.StatusSeeOther)
 
 		return nil
@@ -159,7 +157,7 @@ func (h *Handler) EditUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUser, err := a.Repo(nil).GetUser(r.Context(), int32(id))
+	dbUser, err := a.Q(r.Context()).GetUser(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -195,9 +193,9 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = a.WithTx(r.Context(), func(h app.TXHandle) error {
+	err = a.WithTx(r.Context(), func(ctx context.Context) error {
 
-		dbUser, err := a.Repo(h).GetUser(r.Context(), int32(id))
+		dbUser, err := a.Q(ctx).GetUser(id)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				http.NotFound(w, r)
@@ -208,7 +206,7 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 		}
 		form.ID = id
 
-		ok, err := form.ValidateEdit(r.Context(), a.Repo(h))
+		ok, err := form.ValidateEdit(a.Q(ctx))
 		if err != nil {
 			return err
 		}
@@ -219,24 +217,23 @@ func (h *Handler) PostEditUser(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 
-		upd := repository.UpdateUserParams{Username: dbUser.Username, HashedPassword: dbUser.HashedPassword, ID: int32(id)}
 		if form.Username != "" {
-			upd.Username = form.Username
+			dbUser.Username = form.Username
 		}
 		if form.Password != "" {
 			hash, err := bcrypt.GenerateFromPassword([]byte(form.Password), 12)
 			if err != nil {
 				return err
 			}
-			upd.HashedPassword = string(hash)
+			dbUser.HashedPassword = string(hash)
 		}
 
-		if err := a.Repo(h).UpdateUser(r.Context(), upd); err != nil {
+		if err := a.Q(ctx).UpdateUser(id, dbUser.Username, dbUser.HashedPassword); err != nil {
 			return err
 		}
 
-		a.FlashInfo(r.Context(), "User updated.")
-		a.LogAction(r.Context(), "user updated", slog.String("username", upd.Username), slog.Int("id", id))
+		a.FlashInfo(ctx, "User updated.")
+		a.LogAction(ctx, "user updated", slog.String("username", dbUser.Username), slog.Int("id", id))
 		http.Redirect(w, r, "/users", http.StatusSeeOther)
 
 		return nil
@@ -257,7 +254,7 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := a.Repo(nil).DeleteUser(r.Context(), int32(id)); err != nil {
+	if err := a.Q(r.Context()).DeleteUser(id); err != nil {
 		a.ServerError(w, err)
 		return
 	}

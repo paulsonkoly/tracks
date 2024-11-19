@@ -3,7 +3,6 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"encoding/gob"
 	"io"
 	"log/slog"
@@ -74,20 +73,6 @@ type SessionManager interface {
 	LoadAndSave(next http.Handler) http.Handler
 }
 
-type TXHandle = *sql.Tx
-
-// Transaction manages per request database transaction.
-type Transaction interface {
-	// WithTx runs blk in a transaction. error will be returned if either there
-	// was a problem with the transaction or blk returned an error. blk must pass
-	// h to Repo() to use transaction.
-	WithTx(ctx context.Context, blk func(h TXHandle) error) (err error)
-
-	// Repo returns the query interface.
-	// Pass nil if not within a transaction.
-	Repo(h TXHandle) *repository.Queries
-}
-
 // Template provides html page rendering.
 type Template interface {
 	// Render produces html content identified by name and writes it to w. The data
@@ -99,16 +84,16 @@ type Template interface {
 // encapsulates a logger, transaction handling, session management etc.
 type App struct {
 	logger   Log
-	txdb     Transaction
+	repo     *repository.Repository
 	sm       SessionManager
 	template Template
 	decoder  fDecoder
 }
 
 // New creates a new application.
-func New(logger Log, dbtx Transaction, sm SessionManager, tmpl Template) *App {
+func New(logger Log, repo *repository.Repository, sm SessionManager, tmpl Template) *App {
 	gob.Register(Flash{})
-	return &App{logger: logger, txdb: dbtx, sm: sm, template: tmpl, decoder: newDecoder()}
+	return &App{logger: logger, repo: repo, sm: sm, template: tmpl, decoder: newDecoder()}
 }
 
 // ServerError logs the error happened and responds with 500.
@@ -127,7 +112,7 @@ func (a *App) ClientError(w http.ResponseWriter, err error, status int) {
 func (a *App) LogAction(ctx context.Context, action string, args ...any) {
 	user := a.CurrentUser(ctx)
 	if user != nil {
-		args = append(args, slog.Int("actor id", int(user.ID)))
+		args = append(args, slog.Int("actor id", user.ID))
 	}
 	a.logger.Info(action, args...)
 }

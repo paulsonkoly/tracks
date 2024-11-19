@@ -1,24 +1,26 @@
 {{define "content"}}
+{{with .Track}}
 <div class="flex justify-center items-center min-h-screen bg-gray-100">
   <div class="bg-white border border-gray-300 rounded-lg shadow-lg w-[80vw]">
     <div class="text-center m-4">
       <h2 class="text-2xl font-bold">
-        {{.Track.Name}}
+        {{.Name}}
       </h2>
     </div>
     <div id="map" class="h-[70vh] bg-yellow-100"></div>
     <div class="m-4 min-h-4">
       <div class="float-root">
         <div class="float-left">
-          {{.Track.TrackLengthMeters | distance}}
+          {{.LengthMeters | distance}}
         </div>
-        {{if .Track.Time.Valid}}
+        {{with .Time}}
         <div class="float-right italic">
-          {{.Track.Time.Time}}
+          {{.}}
         </div>
         {{end}}
       </div>
       &nbsp;
     </div>
   </div>
+  {{end}}
   {{end}}

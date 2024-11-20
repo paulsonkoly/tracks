@@ -16,7 +16,7 @@ import (
 )
 
 func TestViewUserLogin(t *testing.T) {
-  // cd in project root
+	// cd in project root
 	err := os.Chdir("../..")
 	assert.NoError(t, err)
 

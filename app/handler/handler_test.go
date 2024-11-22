@@ -24,14 +24,68 @@ func (noLogger) ClientError(_ error, _ int) {}
 func (noLogger) Info(_ string, _ ...any)    {}
 func (noLogger) Panic(_ any)                {}
 
-type noSession struct{}
+type mockSession struct {
+	store map[any]any
+}
 
-func (noSession) Get(_ context.Context, _ string) any        { return nil }
-func (noSession) Put(_ context.Context, _ string, _ any)     {}
-func (noSession) Remove(_ context.Context, _ string)         {}
-func (noSession) Pop(_ context.Context, _ string) any        { return nil }
-func (noSession) RenewToken(_ context.Context) error         { return nil }
-func (noSession) LoadAndSave(next http.Handler) http.Handler { return next }
+func newMockSession() mockSession {
+	return mockSession{store: make(map[any]any)}
+}
+
+func (s mockSession) Get(_ context.Context, key string) any {
+	val, ok := s.store[key]
+	if ok {
+		return val
+	}
+	return nil
+}
+
+func (s mockSession) Put(_ context.Context, key string, val any) {
+	s.store[key] = val
+}
+
+func (s mockSession) Remove(_ context.Context, key string) {
+	delete(s.store, key)
+}
+
+func (s mockSession) Pop(_ context.Context, key string) any {
+	val, ok := s.store[key]
+	if ok {
+		delete(s.store, key)
+		return val
+	}
+	return nil
+}
+
+func (s mockSession) Has(t *testing.T, key string, expected any) {
+	actual, ok := s.store[key]
+	assert.True(t, ok, "session expected to contain key %q, but it was not found", key)
+	if ok && expected != nil {
+		assert.Equal(t, expected, actual)
+	}
+}
+
+func (s mockSession) DoesntHave(t *testing.T, key string) {
+	assert.NotContains(t, key, s.store)
+}
+
+func (s mockSession) HasFlashInfo(t *testing.T, msg string) {
+	flash, ok := s.store[app.SKFlash]
+	assert.True(t, ok, "session expected to contain flash, but it was not found")
+
+	assert.IsType(t, app.Flash{}, flash)
+
+	if flash, ok := flash.(app.Flash); ok {
+		assert.Contains(t, flash, "info")
+		infos, ok := flash["info"]
+		assert.True(t, ok, "flash expected to contain infos, but it was not found")
+
+		assert.Contains(t, infos, msg)
+	}
+}
+
+func (mockSession) RenewToken(_ context.Context) error         { return nil }
+func (mockSession) LoadAndSave(next http.Handler) http.Handler { return next }
 
 func init() {
 	// templates cannot be picked up if we are not in project root
@@ -81,19 +135,17 @@ func withDB(t *testing.T, f func(*sql.DB)) {
 	f(db)
 }
 
-func withApp(t *testing.T, f func(a *app.App)) {
+func withApp(t *testing.T, f func(session mockSession, a *app.App)) {
 	withDB(t, func(db *sql.DB) {
 		queries := sqlc.New(db)
 		repo := repository.New(queries, db)
+		session := newMockSession()
 
-		a := app.New(noLogger{}, &repo, noSession{}, template.New())
-		f(a)
+		a := app.New(noLogger{}, &repo, session, template.New())
+		f(session, a)
 	})
 }
 
-func withHandler(t *testing.T, f func(h *handler.Handler)) {
-	withApp(t, func(a *app.App) {
-		h := handler.New(a)
-		f(h)
-	})
+func withHandler(t *testing.T, f func(session mockSession, a *app.App, h *handler.Handler)) {
+	withApp(t, func(s mockSession, a *app.App) { f(s, a, handler.New(a)) })
 }

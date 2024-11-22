@@ -8,7 +8,8 @@ import (
 	"github.com/paulsonkoly/tracks/repository"
 )
 
-const flashKey = "flash"
+// SKFlash is the session key for storing flash.
+const SKFlash = "flash"
 
 type renderData struct {
 	Users       []repository.User
@@ -31,7 +32,7 @@ func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
 
 	td.CurrentUser = user
 	td.CSRFToken = nosurf.Token(r)
-	if flash, ok := a.sm.Pop(r.Context(), flashKey).(Flash); ok {
+	if flash, ok := a.sm.Pop(r.Context(), SKFlash).(Flash); ok {
 		td.Flash = flash
 	}
 

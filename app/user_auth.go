@@ -12,7 +12,8 @@ import (
 // ErrAuthenticationFailed indicates that either the username or the password was wrong.
 var ErrAuthenticationFailed = errors.New("authentication failed")
 
-const currentUserID = "currentUserID"
+// SKCurrentUserID is the session key for the current user id.
+const SKCurrentUserID = "currentUserID"
 
 // AuthenticateUser attempts a user login. I returns ErrAuthenticationFailed in
 // case of invalid credentials. It returns the logged in user in case of
@@ -35,7 +36,7 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 		return nil, err
 	}
 
-	a.sm.Put(ctx, currentUserID, user.ID)
+	a.sm.Put(ctx, SKCurrentUserID, user.ID)
 
 	if err := a.sm.RenewToken(ctx); err != nil {
 		return nil, err
@@ -46,7 +47,7 @@ func (a *App) AuthenticateUser(ctx context.Context, name, password string) (*rep
 
 // ClearCurrentUser logs out the current user by removing it from the session.
 func (a *App) ClearCurrentUser(ctx context.Context) error {
-	a.sm.Remove(ctx, currentUserID)
+	a.sm.Remove(ctx, SKCurrentUserID)
 
 	if err := a.sm.RenewToken(ctx); err != nil {
 		return err

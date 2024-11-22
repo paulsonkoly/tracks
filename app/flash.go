@@ -9,7 +9,7 @@ import "context"
 type Flash = map[string][]string
 
 func (a *App) flash(ctx context.Context, typ string, msg string) {
-	flash, ok := a.sm.Get(ctx, flashKey).(Flash)
+	flash, ok := a.sm.Get(ctx, SKFlash).(Flash)
 	if !ok {
 		flash = make(Flash)
 	}
@@ -20,7 +20,7 @@ func (a *App) flash(ctx context.Context, typ string, msg string) {
 	msgs = append(msgs, msg)
 
 	flash[typ] = msgs
-	a.sm.Put(ctx, flashKey, flash)
+	a.sm.Put(ctx, SKFlash, flash)
 }
 
 // FlashInfo is a flash message with general information.

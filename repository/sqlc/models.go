@@ -96,6 +96,12 @@ func (ns NullTracktype) Value() (driver.Value, error) {
 	return string(ns.Tracktype), nil
 }
 
+type Collection struct {
+	ID     int32
+	Name   string
+	UserID int32
+}
+
 type Gpxfile struct {
 	ID       int32
 	Filename string
@@ -152,6 +158,11 @@ type Track struct {
 	GpxfileID int32
 	CreatedAt time.Time
 	UserID    int32
+}
+
+type TrackCollection struct {
+	TrackID      int32
+	CollectionID int32
 }
 
 type User struct {

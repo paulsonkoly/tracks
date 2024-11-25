@@ -13,6 +13,9 @@ GROUP BY
 ORDER BY 
     t.created_at desc;
 
+-- name: GetMatchingTracks :many
+select t.id, t.name from "public"."tracks" t where t.name ilike $1;
+
 -- name: InsertTrack :one
 insert into "public"."tracks" (gpxfile_id, type, name, user_id) values ($1, $2, $3, $4) returning id;
 

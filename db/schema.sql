@@ -49,6 +49,37 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
+-- Name: collections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.collections (
+    id integer NOT NULL,
+    name text NOT NULL,
+    user_id integer NOT NULL
+);
+
+
+--
+-- Name: collections_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.collections_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: collections_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.collections_id_seq OWNED BY public.collections.id;
+
+
+--
 -- Name: gpxfiles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -171,6 +202,16 @@ CREATE TABLE public.sessions (
 
 
 --
+-- Name: track_collections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.track_collections (
+    track_id integer NOT NULL,
+    collection_id integer NOT NULL
+);
+
+
+--
 -- Name: tracks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -237,6 +278,13 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: collections id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.collections ALTER COLUMN id SET DEFAULT nextval('public.collections_id_seq'::regclass);
+
+
+--
 -- Name: gpxfiles id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -262,6 +310,22 @@ ALTER TABLE ONLY public.tracks ALTER COLUMN id SET DEFAULT nextval('public.track
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: collections collections_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.collections
+    ADD CONSTRAINT collections_name_key UNIQUE (name);
+
+
+--
+-- Name: collections collections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.collections
+    ADD CONSTRAINT collections_pkey PRIMARY KEY (id);
 
 
 --
@@ -305,6 +369,14 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: track_collections track_collections_track_id_collection_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.track_collections
+    ADD CONSTRAINT track_collections_track_id_collection_id_key UNIQUE (track_id, collection_id);
+
+
+--
 -- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -336,6 +408,14 @@ CREATE INDEX sessions_expiry_idx ON public.sessions USING btree (expiry);
 
 
 --
+-- Name: collections collections_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.collections
+    ADD CONSTRAINT collections_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: gpxfiles gpxfiles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -349,6 +429,22 @@ ALTER TABLE ONLY public.gpxfiles
 
 ALTER TABLE ONLY public.segments
     ADD CONSTRAINT segments_track_id_fkey FOREIGN KEY (track_id) REFERENCES public.tracks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: track_collections track_collections_collection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.track_collections
+    ADD CONSTRAINT track_collections_collection_id_fkey FOREIGN KEY (collection_id) REFERENCES public.collections(id) ON DELETE CASCADE;
+
+
+--
+-- Name: track_collections track_collections_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.track_collections
+    ADD CONSTRAINT track_collections_track_id_fkey FOREIGN KEY (track_id) REFERENCES public.tracks(id) ON DELETE CASCADE;
 
 
 --
@@ -385,4 +481,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241108112311'),
     ('20241112122207'),
     ('20241113093721'),
-    ('20241118083328');
+    ('20241118083328'),
+    ('20241124092631');

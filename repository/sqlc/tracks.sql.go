@@ -11,6 +11,38 @@ import (
 	"time"
 )
 
+const getMatchingTracks = `-- name: GetMatchingTracks :many
+select t.id, t.name from "public"."tracks" t where t.name ilike $1
+`
+
+type GetMatchingTracksRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) GetMatchingTracks(ctx context.Context, name string) ([]GetMatchingTracksRow, error) {
+	rows, err := q.db.QueryContext(ctx, getMatchingTracks, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetMatchingTracksRow
+	for rows.Next() {
+		var i GetMatchingTracksRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTrack = `-- name: GetTrack :one
 select
    t.id, t.name, t.type, t.gpxfile_id, t.created_at, t.user_id,

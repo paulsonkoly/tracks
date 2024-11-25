@@ -12,8 +12,8 @@ import (
 // Tracks stores data about a GPX track. A GPX track belongs to a user and
 // belongs to a gpx file and has many segments.
 type Track struct {
-	ID           int
-	Name         string
+	ID           int            `json:"id"`
+	Name         string         `json:"name"`
 	Type         sqlc.Tracktype // TODO remove sqlc
 	CreatedAt    time.Time
 	Time         *time.Time
@@ -77,6 +77,20 @@ func (q Queries) GetTracks() ([]Track, error) {
 				CreatedAt:    qr.Track.CreatedAt,
 				User:         &u,
 			})
+	}
+	return r, nil
+}
+
+// GetTracks retrieves tracks with matching names. Only name and id is set.
+func (q Queries) GetMatchingTracks(name string) ([]Track, error) {
+	r := []Track{}
+
+	qrs, err := q.sqlc.GetMatchingTracks(q.ctx, fmt.Sprintf("%%%s%%", name))
+	if err != nil {
+		return nil, err
+	}
+	for _, qr := range qrs {
+		r = append(r, Track{ID: int(qr.ID), Name: qr.Name})
 	}
 	return r, nil
 }

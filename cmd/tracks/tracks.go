@@ -37,8 +37,12 @@ func main() {
 
 	mux.HandleFunc("GET /{$}", handlers.ViewTracks)
 
+	mux.HandleFunc("GET /tracks", handlers.ListTracks)
 	mux.HandleFunc("GET /track/{id}", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/{id}/points", handlers.ViewTrackPoints)
+
+	// Collection
+	mux.Handle("GET /collection/new", app.RequiresLogIn(http.HandlerFunc(handlers.NewCollection)))
 
 	// GPX file
 	mux.Handle("GET /gpxfiles", app.RequiresLogIn(http.HandlerFunc(handlers.GPXFiles)))

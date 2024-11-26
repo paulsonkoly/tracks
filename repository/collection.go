@@ -16,15 +16,15 @@ type Collection struct {
 }
 
 // InsertCollection adds a new collection of tracks with the given name.
-func (q Queries) InsertCollection(name string, user User, tracks []Track) error {
-	trackIDs := make([]int32, len(tracks))
-	for i, track := range tracks {
-		trackIDs[i] = int32(track.ID)
+func (q Queries) InsertCollection(name string, user User, trackIDs []int) error {
+	conv := make([]int32, len(trackIDs))
+	for i, id := range trackIDs {
+		conv[i] = int32(id)
 	}
 	return q.sqlc.InsertCollection(q.ctx, sqlc.InsertCollectionParams{
 		Name:     name,
 		UserID:   int32(user.ID),
-		TrackIds: trackIDs,
+		TrackIds: conv,
 	})
 }
 

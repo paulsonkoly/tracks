@@ -30,3 +30,9 @@ join public.segments s ON t.id = s.track_id
 where t.id = $1
 group by t.id, f.time;
 
+-- name: GetNonExistentTrackIDs :many
+with s as (select unnest(@track_ids::integer[]) id)
+select s.id::integer
+from s
+left join tracks as t on s.id = t.id
+where t.id is null;

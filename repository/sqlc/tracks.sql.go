@@ -9,6 +9,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 const getMatchingTracks = `-- name: GetMatchingTracks :many
@@ -33,6 +35,37 @@ func (q *Queries) GetMatchingTracks(ctx context.Context, name string) ([]GetMatc
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getNonExistentTrackIDs = `-- name: GetNonExistentTrackIDs :many
+with s as (select unnest($1::integer[]) id)
+select s.id::integer
+from s
+left join tracks as t on s.id = t.id
+where t.id is null
+`
+
+func (q *Queries) GetNonExistentTrackIDs(ctx context.Context, trackIds []int32) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, getNonExistentTrackIDs, pq.Array(trackIds))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var s_id int32
+		if err := rows.Scan(&s_id); err != nil {
+			return nil, err
+		}
+		items = append(items, s_id)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

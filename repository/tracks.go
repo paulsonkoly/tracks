@@ -95,6 +95,19 @@ func (q Queries) GetMatchingTracks(name string) ([]Track, error) {
 	return r, nil
 }
 
+func (q Queries) TrackIDsPresent(ids []int) (bool, error) {
+	conv := make([]int32, len(ids))
+	for i, id := range ids {
+		conv[i] = int32(id)
+	}
+
+	badIDs, err := q.sqlc.GetNonExistentTrackIDs(q.ctx, conv)
+	if err != nil {
+		return false, err
+	}
+	return len(badIDs) == 0, nil
+}
+
 // Point is a pair of longitude and latitude.
 type Point struct {
 	Longitude, Latitude float64

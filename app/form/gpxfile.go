@@ -6,8 +6,8 @@ import (
 
 // GPXFile validates the data associated with a GPX file upload.
 type GPXFile struct {
-	Filename string
-	errors
+	Filename string `form:"filename"`
+	errors   `form:"-"`
 }
 
 // GPXFileUniqueChecker checks if the file has already been uploaded.

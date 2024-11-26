@@ -32,7 +32,7 @@ func TestViewUserLogin(t *testing.T) {
 func TestPostUserLoginInvalidCredentials(t *testing.T) {
 	withHandler(t, func(session mockSession, _ *app.App, h *handler.Handler) {
 
-		r := httptest.NewRequest(http.MethodPost, "/user/login", strings.NewReader("Username=admin&Password=adminpass"))
+		r := httptest.NewRequest(http.MethodPost, "/user/login", strings.NewReader("username=admin&password=adminpass"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		w := httptest.NewRecorder()
 
@@ -55,7 +55,7 @@ func TestPostUserLogin(t *testing.T) {
 		user, err := a.Q(context.Background()).InsertUser("admin", string(hash))
 		assert.NoError(t, err)
 
-		r := httptest.NewRequest(http.MethodPost, "/user/login", strings.NewReader("Username=admin&Password=adminpass"))
+		r := httptest.NewRequest(http.MethodPost, "/user/login", strings.NewReader("username=admin&password=adminpass"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		w := httptest.NewRecorder()
 
@@ -124,7 +124,7 @@ func TestNewUser(t *testing.T) {
 
 func TestPostNewUser(t *testing.T) {
 	withHandler(t, func(session mockSession, a *app.App, h *handler.Handler) {
-		r := httptest.NewRequest(http.MethodPost, "/user/new", strings.NewReader("Username=admin&Password=adminpass&PasswordConfirm=adminpass"))
+		r := httptest.NewRequest(http.MethodPost, "/user/new", strings.NewReader("username=admin&password=adminpass&password_confirm=adminpass"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		w := httptest.NewRecorder()
 
@@ -148,7 +148,7 @@ func TestPostNewUserFailure(t *testing.T) {
 		_, err := a.Q(context.Background()).InsertUser("admin", "")
 		assert.NoError(t, err)
 
-		r := httptest.NewRequest(http.MethodPost, "/user/new", strings.NewReader("Username=admin&Password=a&PasswordConfirm=mismatch"))
+		r := httptest.NewRequest(http.MethodPost, "/user/new", strings.NewReader("username=admin&password=a&password_confirm=mismatch"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		w := httptest.NewRecorder()
 
@@ -188,7 +188,7 @@ func TestPostEditUser(t *testing.T) {
 		user, err := a.Q(context.Background()).InsertUser("bob", "")
 		assert.NoError(t, err)
 
-		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("Username=alice&Password=1234567&PasswordConfirm=1234567"))
+		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("username=alice&password=1234567&password_confirm=1234567"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		r.SetPathValue("id", strconv.Itoa(user.ID))
 		w := httptest.NewRecorder()
@@ -214,7 +214,7 @@ func TestPostEditUserUsernameOnly(t *testing.T) {
 		user, err := a.Q(context.Background()).InsertUser("bob", string(hash))
 		assert.NoError(t, err)
 
-		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("Username=alice"))
+		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("username=alice"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		r.SetPathValue("id", strconv.Itoa(user.ID))
 		w := httptest.NewRecorder()
@@ -236,7 +236,7 @@ func TestPostEditUserFailure(t *testing.T) {
 		_, err = a.Q(context.Background()).InsertUser("alice", "")
 		assert.NoError(t, err)
 
-		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("Username=alice&Password=1234567&PasswordConfirm=1234567"))
+		r := httptest.NewRequest(http.MethodPost, "/user/{id}/edit", strings.NewReader("username=alice&password=1234567&password_confirm=1234567"))
 		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		r.SetPathValue("id", strconv.Itoa(user.ID))
 		w := httptest.NewRecorder()

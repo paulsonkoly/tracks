@@ -2,7 +2,7 @@ package form
 
 // Login represents the login form.
 type Login struct {
-	Username string
-	Password string
-	errors
+	Username string `form:"username"`
+	Password string `form:"password"`
+	errors   `form:"-"`
 }

@@ -6,11 +6,11 @@ import (
 
 // User provides user data validation.
 type User struct {
-	ID              int    // ID points to the user to edit
-	Username        string // Username is the login account
-	Password        string // Password is the login password
-	PasswordConfirm string // PasswordConfirm is the confirmation password
-	errors
+	ID              int    `form:"-"`                // ID points to the user to edit
+	Username        string `form:"username"`         // Username is the login account
+	Password        string `form:"password"`         // Password is the login password
+	PasswordConfirm string `form:"password_confirm"` // PasswordConfirm is the confirmation password
+	errors          `form:"-"`
 }
 
 // UserUniqueChecker checks if the user does not exist in the database.

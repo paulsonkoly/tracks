@@ -35,9 +35,9 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /{$}", handlers.ViewTracks)
+	mux.HandleFunc("GET /{$}", handlers.Tracks)
 
-	mux.HandleFunc("GET /tracks", handlers.ListTracks)
+	mux.HandleFunc("GET /tracks", handlers.Tracks)
 	mux.HandleFunc("GET /track/{id}", handlers.ViewTrack)
 	mux.HandleFunc("GET /track/{id}/points", handlers.ViewTrackPoints)
 

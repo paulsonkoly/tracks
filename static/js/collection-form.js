@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const response = await fetch(`/tracks?name=${query}`);
+        const response = await fetch(`/tracks?name=${query}`, {headers:  {Accept: 'application/json' }});
         if (response.ok) {
           const data = await response.json();
           suggestionsBox.innerHTML = '';

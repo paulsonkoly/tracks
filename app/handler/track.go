@@ -8,44 +8,48 @@ import (
 	"unicode/utf8"
 
 	"github.com/paulsonkoly/tracks/repository"
+	"github.com/timewasted/go-accept-headers"
 )
 
-func (h *Handler) ViewTracks(w http.ResponseWriter, r *http.Request) {
-	a := h.app
-
-	tracks, err := a.Q(r.Context()).GetTracks()
-	if err != nil {
-		a.ServerError(w, err)
-		return
-	}
-
-	if err := a.Render(w, "track/tracks.html", a.BaseTemplate(r).WithTracks(tracks)); err != nil {
-		a.ServerError(w, err)
-	}
-}
-
-// ListTracks is a json end point to list track names matching a string fragment from ?name=<fragment>.
-func (h *Handler) ListTracks(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Tracks(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
 	name := r.URL.Query().Get("name")
-	if utf8.RuneCountInString(name) < 3 {
+	if name != "" && utf8.RuneCountInString(name) < 3 {
 		a.ClientError(w, errors.New("Track name must be at least 3 characters"), http.StatusBadRequest)
 		return
 	}
 
-	tracks, err := a.Q(r.Context()).GetMatchingTracks(name)
+	var (
+		tracks []repository.Track
+		err    error
+	)
+	if name == "" {
+		tracks, err = a.Q(r.Context()).GetTracks()
+	} else {
+		tracks, err = a.Q(r.Context()).GetMatchingTracks(name)
+	}
+
 	if err != nil {
 		a.ServerError(w, err)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	hdr := accept.Parse(r.Header.Get("Accept"))
+	switch {
+	case hdr.Accepts("text/html"):
+		if err := a.Render(w, "track/tracks.html", a.BaseTemplate(r).WithTracks(tracks)); err != nil {
+			a.ServerError(w, err)
+		}
+	case hdr.Accepts("application/json"):
+		w.Header().Set("Content-Type", "application/json")
 
-	err = json.NewEncoder(w).Encode(map[string][]repository.Track{"tracks": tracks})
-	if err != nil {
-		a.ServerError(w, err)
-		return
+		if err := json.NewEncoder(w).Encode(map[string][]repository.Track{"tracks": tracks}); err != nil {
+			a.ServerError(w, err)
+		}
+	default:
+		a := h.app
+		a.ClientError(w, errors.New("cannot list tracks"), http.StatusUnsupportedMediaType)
 	}
 }
 

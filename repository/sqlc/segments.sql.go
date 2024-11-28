@@ -9,20 +9,25 @@ import (
 	"context"
 )
 
-const getTrackSegmentPoints = `-- name: GetTrackSegmentPoints :many
-SELECT track_id, longitude, latitude FROM points where track_id=$1
+const getSegmentPoints = `-- name: GetSegmentPoints :many
+SELECT latitude::float, longitude::float FROM points where segment_id=$1
 `
 
-func (q *Queries) GetTrackSegmentPoints(ctx context.Context, trackID int32) ([]Point, error) {
-	rows, err := q.db.QueryContext(ctx, getTrackSegmentPoints, trackID)
+type GetSegmentPointsRow struct {
+	Latitude  float64
+	Longitude float64
+}
+
+func (q *Queries) GetSegmentPoints(ctx context.Context, segmentID int32) ([]GetSegmentPointsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getSegmentPoints, segmentID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Point
+	var items []GetSegmentPointsRow
 	for rows.Next() {
-		var i Point
-		if err := rows.Scan(&i.TrackID, &i.Longitude, &i.Latitude); err != nil {
+		var i GetSegmentPointsRow
+		if err := rows.Scan(&i.Latitude, &i.Longitude); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

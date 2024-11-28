@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/paulsonkoly/tracks/app/form"
 )
@@ -56,5 +58,49 @@ func (h *Handler) PostNewCollection(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		a.ServerError(w, err)
+	}
+}
+
+func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
+	a := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		a.ClientError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	col, err := a.Q(r.Context()).GetCollection(id)
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	if err := a.Render(w, "collection/collection.html", a.BaseTemplate(r).WithCollection(col)); err != nil {
+		a.ServerError(w, err)
+	}
+}
+
+func (h *Handler) ListCollectionPoints(w http.ResponseWriter, r *http.Request) {
+	a := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		a.ClientError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	points, err := a.Q(r.Context()).GetCollectionPoints(id)
+	if err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(points)
+	if err != nil {
+		a.ServerError(w, err)
+		return
 	}
 }

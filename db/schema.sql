@@ -153,11 +153,11 @@ CREATE TABLE public.segments (
 --
 
 CREATE VIEW public.points AS
- SELECT s.track_id,
+ SELECT s.id AS segment_id,
     public.st_x(s.geom) AS longitude,
     public.st_y(s.geom) AS latitude
    FROM ( SELECT (public.st_dumppoints((segments.geometry)::public.geometry)).geom AS geom,
-            segments.track_id
+            segments.id
            FROM public.segments) s;
 
 
@@ -482,4 +482,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20241112122207'),
     ('20241113093721'),
     ('20241118083328'),
-    ('20241124092631');
+    ('20241124092631'),
+    ('20241127124419');

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -108,11 +107,6 @@ func (q Queries) TrackIDsPresent(ids []int) (bool, error) {
 	return len(badIDs) == 0, nil
 }
 
-// Point is a pair of longitude and latitude.
-type Point struct {
-	Longitude, Latitude float64
-}
-
 // InsertTrackSegment inserts a track segment into the database.
 func (q Queries) InsertTrackSegment(id int, points []Point) error {
 	gBuilder := strings.Builder{}
@@ -128,25 +122,30 @@ func (q Queries) InsertTrackSegment(id int, points []Point) error {
 }
 
 // GetTrackPoints returns the points of a track.
-func (q Queries) GetTrackPoints(id int) ([]Point, error) {
-	qrs, err := q.sqlc.GetTrackSegmentPoints(q.ctx, int32(id))
+func (q Queries) GetTrackPoints(id int) ([]Segment, error) {
+	result := []Segment{}
+
+	sIDs, err := q.sqlc.GetTrackSegments(q.ctx, int32(id))
 	if err != nil {
 		return nil, err
 	}
-	r := []Point{}
-	for _, qr := range qrs {
-		long, ok := qr.Longitude.(float64)
-		if !ok {
-			return nil, errors.New("invalid longitude")
+
+	for _, sID := range sIDs {
+		pts, err := q.sqlc.GetSegmentPoints(q.ctx, sID)
+		if err != nil {
+			return nil, err
 		}
-		lat, ok := qr.Latitude.(float64)
-		if !ok {
-			return nil, errors.New("invalid latitude")
+
+		conv := make(Segment, len(pts))
+		for i, p := range pts {
+			conv[i] = Point{
+				Latitude:  p.Latitude,
+				Longitude: p.Longitude,
+			}
 		}
-		r = append(r, Point{
-			Latitude:  lat,
-			Longitude: long,
-		})
+
+		result = append(result, conv)
 	}
-	return r, nil
+
+	return result, nil
 }

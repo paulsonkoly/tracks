@@ -115,6 +115,33 @@ func (q *Queries) GetTrack(ctx context.Context, id int32) (GetTrackRow, error) {
 	return i, err
 }
 
+const getTrackSegments = `-- name: GetTrackSegments :many
+select id from segments where track_id = $1
+`
+
+func (q *Queries) GetTrackSegments(ctx context.Context, trackID int32) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, getTrackSegments, trackID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTracks = `-- name: GetTracks :many
 SELECT 
     t.id, t.name, t.type, t.gpxfile_id, t.created_at, t.user_id,

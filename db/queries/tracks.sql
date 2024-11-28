@@ -36,3 +36,7 @@ select s.id::integer
 from s
 left join tracks as t on s.id = t.id
 where t.id is null;
+
+-- name: GetTrackSegments :many
+select id from segments where track_id = $1;
+

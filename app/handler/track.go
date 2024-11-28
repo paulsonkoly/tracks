@@ -73,7 +73,7 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) ViewTrackPoints(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListTrackPoints(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
 	id, err := strconv.Atoi(r.PathValue("id"))

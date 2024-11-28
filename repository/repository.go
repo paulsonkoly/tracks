@@ -67,3 +67,11 @@ func (r Repository) Q(ctx context.Context) Queries {
 	}
 	return Queries{ctx: ctx, sqlc: r.sqlc.WithTx(h)}
 }
+
+// Point is a pair of longitude and latitude.
+type Point struct {
+	Longitude, Latitude float64
+}
+
+// Segment is a line segment, a sequence of [Point].
+type Segment []Point

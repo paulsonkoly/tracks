@@ -130,7 +130,7 @@ type Gpxfile struct {
 }
 
 type Point struct {
-	TrackID   int32
+	SegmentID int32
 	Longitude interface{}
 	Latitude  interface{}
 }

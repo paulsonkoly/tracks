@@ -39,3 +39,43 @@ func (q Queries) CollectionUnique(name string) (bool, error) {
 	}
 	return false, nil
 }
+
+func (q Queries) GetCollection(id int) (Collection, error) {
+	var result Collection
+	// TODO: we might want to return more
+	name, err := q.sqlc.GetCollection(q.ctx, int32(id))
+	if err != nil {
+		return result, err
+	}
+
+	return Collection{Name: name}, nil
+}
+
+// GetTrackPoints returns the points of a track.
+func (q Queries) GetCollectionPoints(id int) ([]Segment, error) {
+	result := []Segment{}
+
+	sIDs, err := q.sqlc.GetCollectionSegments(q.ctx, int32(id))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, sID := range sIDs {
+		pts, err := q.sqlc.GetSegmentPoints(q.ctx, sID)
+		if err != nil {
+			return nil, err
+		}
+
+		conv := make(Segment, len(pts))
+		for i, p := range pts {
+			conv[i] = Point{
+				Latitude:  p.Latitude,
+				Longitude: p.Longitude,
+			}
+		}
+
+		result = append(result, conv)
+	}
+
+	return result, nil
+}

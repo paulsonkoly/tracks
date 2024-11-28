@@ -16,6 +16,7 @@ type renderData struct {
 	GPXFiles    []repository.GPXFile
 	Track       repository.Track
 	Tracks      []repository.Track
+	Collection  repository.Collection
 	Form        any
 	Flash       Flash
 	CurrentUser *repository.User
@@ -56,6 +57,11 @@ func (r renderData) WithTrack(track repository.Track) renderData {
 
 func (r renderData) WithTracks(tracks []repository.Track) renderData {
 	r.Tracks = tracks
+	return r
+}
+
+func (r renderData) WithCollection(collection repository.Collection) renderData {
+	r.Collection = collection
 	return r
 }
 

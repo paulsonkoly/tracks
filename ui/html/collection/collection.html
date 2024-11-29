@@ -1,13 +1,37 @@
 {{define "content"}}
 {{with .Collection}}
-<div class="flex justify-center items-center min-h-screen bg-gray-100">
-  <div class="bg-white border border-gray-300 rounded-lg shadow-lg w-[80vw]">
-    <div class="text-center m-4">
-      <h2 class="text-2xl font-bold">
-        {{.Name}}
-      </h2>
+<div class="flex justify-center bg-gray-100 p-6 min-h-screen">
+  <!-- Main Content Wrapper -->
+  <div class="flex w-full max-w-6xl gap-8 mt-8">
+    <!-- Map Section -->
+    <div class="flex-grow bg-white border border-gray-300 rounded-lg shadow-lg">
+      <div class="text-center m-4">
+        <h2 class="text-2xl font-bold">
+          {{.Name}}
+        </h2>
+      </div>
+      <div id="map" class="h-[70vh] bg-yellow-100"></div>
     </div>
-    <div id="map" class="h-[70vh] bg-yellow-100"></div>
+
+    <!-- Track Names Section -->
+    {{with .Tracks}}
+    <div class="w-[30%] bg-white border border-gray-300 rounded-lg shadow-lg p-4 self-start">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-300">
+            <th class="py-2 px-4">Tracks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .}}
+          <tr class="border-b border-gray-200">
+            <td class="py-2 px-4"><a href="/track/{{.ID}}" class="text-green-600 hover:underline">{{.Name}}</a></td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+    {{end}}
   </div>
 </div>
 {{end}}

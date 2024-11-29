@@ -13,6 +13,43 @@ import (
 	"github.com/lib/pq"
 )
 
+const getCollectionTracks = `-- name: GetCollectionTracks :many
+select t.id, t.name from
+collections c
+inner join track_collections tc on tc.collection_id = c.id
+inner join tracks t on tc.track_id = t.id
+inner join segments s on s.track_id = t.id
+where c.id = $1
+`
+
+type GetCollectionTracksRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) GetCollectionTracks(ctx context.Context, id int32) ([]GetCollectionTracksRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCollectionTracks, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCollectionTracksRow
+	for rows.Next() {
+		var i GetCollectionTracksRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMatchingTracks = `-- name: GetMatchingTracks :many
 select t.id, t.name from "public"."tracks" t where t.name ilike $1
 `

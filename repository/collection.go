@@ -42,13 +42,25 @@ func (q Queries) CollectionUnique(name string) (bool, error) {
 
 func (q Queries) GetCollection(id int) (Collection, error) {
 	var result Collection
-	// TODO: we might want to return more
 	name, err := q.sqlc.GetCollection(q.ctx, int32(id))
 	if err != nil {
 		return result, err
 	}
 
-	return Collection{Name: name}, nil
+	trks, err := q.sqlc.GetCollectionTracks(q.ctx, int32(id))
+	if err != nil {
+		return result, nil
+	}
+
+	result.Name = name
+	result.Tracks = make([]Track, len(trks))
+
+	for i, trk := range trks {
+		result.Tracks[i].ID = int(trk.ID)
+		result.Tracks[i].Name = trk.Name
+	}
+
+	return result, nil
 }
 
 // GetTrackPoints returns the points of a track.

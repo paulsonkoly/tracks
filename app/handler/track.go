@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -64,6 +65,10 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 
 	track, err := a.Q(r.Context()).GetTrack(id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			a.ClientError(w, err, http.StatusNotFound)
+			return
+		}
 		a.ServerError(w, err)
 		return
 	}

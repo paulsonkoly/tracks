@@ -17,6 +17,7 @@ type renderData struct {
 	Track       repository.Track
 	Tracks      []repository.Track
 	Collection  repository.Collection
+	Collections []repository.Collection
 	Form        any
 	Flash       Flash
 	CurrentUser *repository.User
@@ -35,6 +36,11 @@ func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
 	td.CSRFToken = nosurf.Token(r)
 	if flash, ok := a.sm.Pop(r.Context(), SKFlash).(Flash); ok {
 		td.Flash = flash
+	}
+
+	cs := r.Context().Value(Collections)
+	if cs, ok := cs.([]repository.Collection); ok {
+		td.Collections = cs
 	}
 
 	return td

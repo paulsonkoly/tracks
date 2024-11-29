@@ -17,6 +17,7 @@ type ContextKey string
 // having the current user in the context we avoid loading it many times
 // throughout the lifespan of the request.
 var CurrentUser = ContextKey("CurrentUser")
+var Collections = ContextKey("Collection")
 
 // StandardChain is a middleware to be used for every request that does not require further special treatment.
 func (a *App) StandardChain() alice.Chain {
@@ -65,6 +66,16 @@ func (a *App) Dynamic(next http.Handler) http.Handler {
 				r = r.WithContext(ctx)
 			}
 		}
+
+		// load collection set in the context as it appears on every page in the main menu bar
+		cs, err := a.Q(ctx).GetCollections()
+		if err != nil {
+			a.ServerError(w, err)
+			return
+		}
+
+		ctx = context.WithValue(ctx, Collections, cs)
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})

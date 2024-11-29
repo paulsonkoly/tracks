@@ -91,3 +91,19 @@ func (q Queries) GetCollectionPoints(id int) ([]Segment, error) {
 
 	return result, nil
 }
+
+func (q Queries) GetCollections() ([]Collection, error) {
+	cs, err := q.sqlc.GetCollections(q.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]Collection, len(cs))
+
+	for i, c := range cs {
+		result[i].Name = c.Name
+		result[i].ID = int(c.ID)
+	}
+
+	return result, nil
+}

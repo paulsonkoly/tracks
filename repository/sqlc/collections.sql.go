@@ -65,6 +65,38 @@ func (q *Queries) GetCollectionSegments(ctx context.Context, id int32) ([]int32,
 	return items, nil
 }
 
+const getCollections = `-- name: GetCollections :many
+select c.id, c.name from collections c order by c.id
+`
+
+type GetCollectionsRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) GetCollections(ctx context.Context) ([]GetCollectionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getCollections)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCollectionsRow
+	for rows.Next() {
+		var i GetCollectionsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertCollection = `-- name: InsertCollection :exec
 with c as (insert into collections (name, user_id) values ($1, $2) returning id)
 insert into track_collections (collection_id, track_id)

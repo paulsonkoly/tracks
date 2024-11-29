@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -72,6 +74,10 @@ func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
 
 	col, err := a.Q(r.Context()).GetCollection(id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			a.ClientError(w, err, http.StatusNotFound)
+			return
+		}
 		a.ServerError(w, err)
 		return
 	}

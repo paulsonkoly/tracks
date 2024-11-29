@@ -11,10 +11,13 @@
       </div>
       <!-- Centre - Nav Links -->
       <div class="md:flex space-x-8">
+        {{range .Collections}}
+        <a href="/collection/{{.ID}}" class="text-white hover:text-gray-200">{{.Name}}</a>
+        {{end}}
         {{with .CurrentUser}}
-          <a href="/collection/new" class="text-white hover:text-gray-200">New Collection</a>
-          <a href="/gpxfiles" class="text-white hover:text-gray-200">Files</a>
-          <a href="/users" class="text-white hover:text-gray-200">Users</a>
+        <a href="/collection/new" class="text-white hover:text-gray-200">New Collection</a>
+        <a href="/gpxfiles" class="text-white hover:text-gray-200">Files</a>
+        <a href="/users" class="text-white hover:text-gray-200">Users</a>
         {{end}}
       </div>
       <!-- Login/Logout -->

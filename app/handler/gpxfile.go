@@ -15,6 +15,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// GPXFiles handler renders the file list page.
 func (h *Handler) GPXFiles(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
@@ -29,6 +30,7 @@ func (h *Handler) GPXFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostUploadGPXFile handles the post request for file upload.
 func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 	uid := a.CurrentUser(r.Context()).ID
@@ -108,7 +110,7 @@ func (h *Handler) PostUploadGPXFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeleteTrack deletes a GPX file.
+// DeleteGPXFile deletes a GPX file.
 func (h *Handler) DeleteGPXFile(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 

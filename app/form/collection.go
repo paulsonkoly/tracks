@@ -9,16 +9,12 @@ type Collection struct {
 	errors `form:"-"`
 }
 
-type Track struct {
-	ID   int    // ID is the track id.
-	Name string // Name is the track name.
-}
-
 // CollectionUniqueChecker checks if a collection name is unqiue.
 type CollectionUniqueChecker interface {
 	CollectionUnique(name string) (bool, error)
 }
 
+// TrackIDsPresentChecker checks if the track ids are present in the database.
 type TrackIDsPresentChecker interface {
 	TrackIDsPresent(ids []int) (bool, error)
 }

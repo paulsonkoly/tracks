@@ -7,10 +7,12 @@ package handler
 
 import "github.com/paulsonkoly/tracks/app"
 
+// Handler is an application request handler.
 type Handler struct {
 	app *app.App
 }
 
+// New creates a new handler.
 func New(app *app.App) *Handler {
 	return &Handler{app: app}
 }

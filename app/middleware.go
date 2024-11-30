@@ -17,6 +17,9 @@ type ContextKey string
 // having the current user in the context we avoid loading it many times
 // throughout the lifespan of the request.
 var CurrentUser = ContextKey("CurrentUser")
+
+// Collections is the array of collections loaded to be rendered on the top
+// menu bar.
 var Collections = ContextKey("Collection")
 
 // StandardChain is a middleware to be used for every request that does not require further special treatment.

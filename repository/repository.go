@@ -24,6 +24,7 @@ func New(sqlc *sqlc.Queries, db *sql.DB) Repository {
 
 const txHandle = ContextKey("tracksTxHandle")
 
+// ContextKey is to use the requuest context as a map store.
 type ContextKey string
 
 // WithTx executes the given block in a transaction.

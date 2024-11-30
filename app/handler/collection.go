@@ -22,6 +22,7 @@ func (h *Handler) NewCollection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostNewCollection handles post requests of the collection form page.
 func (h *Handler) PostNewCollection(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
@@ -63,6 +64,7 @@ func (h *Handler) PostNewCollection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ViewCollection renders the collection map page.
 func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
@@ -87,6 +89,7 @@ func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ListCollectionPoints returns a json array of segments of points for the collection.
 func (h *Handler) ListCollectionPoints(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 

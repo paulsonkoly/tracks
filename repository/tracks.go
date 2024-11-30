@@ -80,7 +80,7 @@ func (q Queries) GetTracks() ([]Track, error) {
 	return r, nil
 }
 
-// GetTracks retrieves tracks with matching names. Only name and id is set.
+// GetMatchingTracks retrieves tracks with matching names. Only name and id is set.
 func (q Queries) GetMatchingTracks(name string) ([]Track, error) {
 	r := []Track{}
 
@@ -94,6 +94,7 @@ func (q Queries) GetMatchingTracks(name string) ([]Track, error) {
 	return r, nil
 }
 
+// TrackIDsPresent checks if the given track IDs are present in the database.
 func (q Queries) TrackIDsPresent(ids []int) (bool, error) {
 	conv := make([]int32, len(ids))
 	for i, id := range ids {

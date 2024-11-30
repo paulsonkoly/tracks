@@ -24,6 +24,8 @@ type renderData struct {
 	CSRFToken   string
 }
 
+// BaseTemplate is the basic template that every page needs. Use With* methods
+// to add more data to the base template.
 func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
 	// exporting function returning struct with non-exported fields. This is
 	// intentional here so the handlers can only construct renderData with
@@ -46,31 +48,38 @@ func (a *App) BaseTemplate(r *http.Request) renderData { // nolint:revive
 	return td
 }
 
+// WithUsers adds users to the template.
 func (r renderData) WithUsers(users []repository.User) renderData {
 	r.Users = users
 	return r
 }
 
+// WithGPXFiles adds gpx files to the template.
 func (r renderData) WithGPXFiles(files []repository.GPXFile) renderData {
 	r.GPXFiles = files
 	return r
 }
 
+// WithTrack adds a single track to the template.
 func (r renderData) WithTrack(track repository.Track) renderData {
 	r.Track = track
 	return r
 }
 
+// WithTracks adds tracks to the template.
 func (r renderData) WithTracks(tracks []repository.Track) renderData {
 	r.Tracks = tracks
 	return r
 }
 
+// WithCollection adds collection to the template.
 func (r renderData) WithCollection(collection repository.Collection) renderData {
 	r.Collection = collection
 	return r
 }
 
+// WithForm adds a forms to the template. This is for form pages to re-render
+// the failing form with field errors from the form object.
 func (r renderData) WithForm(form any) renderData {
 	r.Form = form
 	return r

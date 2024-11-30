@@ -11,6 +11,7 @@ import (
 	"github.com/paulsonkoly/tracks/repository"
 )
 
+// TMPDir is the temporary directory for the application.
 const TMPDir = "tmp"
 
 // Log defines the application logger.

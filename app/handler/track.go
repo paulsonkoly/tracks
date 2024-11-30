@@ -12,6 +12,7 @@ import (
 	"github.com/timewasted/go-accept-headers"
 )
 
+// Tracks renders the tracks list page.
 func (h *Handler) Tracks(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
@@ -54,6 +55,7 @@ func (h *Handler) Tracks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ViewTrack renders the track page for a specific id.
 func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
@@ -78,6 +80,7 @@ func (h *Handler) ViewTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ListTrackPoints returns a json array of segments of points for a track.
 func (h *Handler) ListTrackPoints(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 

@@ -40,6 +40,7 @@ func (q Queries) CollectionUnique(name string) (bool, error) {
 	return false, nil
 }
 
+// GetCollection fetches the collection with the given id.
 func (q Queries) GetCollection(id int) (Collection, error) {
 	var result Collection
 	name, err := q.sqlc.GetCollection(q.ctx, int32(id))
@@ -63,7 +64,7 @@ func (q Queries) GetCollection(id int) (Collection, error) {
 	return result, nil
 }
 
-// GetTrackPoints returns the points of a track.
+// GetCollectionPoints returns the points of a track.
 func (q Queries) GetCollectionPoints(id int) ([]Segment, error) {
 	result := []Segment{}
 
@@ -92,6 +93,7 @@ func (q Queries) GetCollectionPoints(id int) ([]Segment, error) {
 	return result, nil
 }
 
+// GetCollections returns all collections.
 func (q Queries) GetCollections() ([]Collection, error) {
 	cs, err := q.sqlc.GetCollections(q.ctx)
 	if err != nil {

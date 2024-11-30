@@ -56,8 +56,9 @@ func (q Queries) SetGPXFileStatus(id int, status sqlc.Filestatus) error {
 		})
 }
 
+// UpdateGPXFileParams are updateable properties of a GPX file.
 type UpdateGPXFileParams struct {
-	ID               int
+	ID               int // ID identifies the file to update.
 	Version          *string
 	Creator          *string
 	Name             *string
@@ -172,6 +173,8 @@ func (q Queries) GetGPXFiles() ([]GPXFile, error) {
 	return result, nil
 }
 
+// GPXFileUnique returns wether a GPX file will be unique with the given file
+// name.
 func (q Queries) GPXFileUnique(filename string) (bool, error) {
 	_, err := q.sqlc.GetGPXFileByFilename(q.ctx, filename)
 	if err != nil {

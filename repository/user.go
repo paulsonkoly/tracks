@@ -16,7 +16,7 @@ type User struct {
 	CreatedAt      time.Time
 }
 
-// InserUser inserts user into database.
+// InsertUser inserts user into database.
 func (q Queries) InsertUser(username, hashedPassword string) (User, error) {
 	var user User
 	qr, err := q.sqlc.InsertUser(q.ctx,

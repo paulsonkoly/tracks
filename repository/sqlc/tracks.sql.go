@@ -18,7 +18,6 @@ select t.id, t.name from
 collections c
 inner join track_collections tc on tc.collection_id = c.id
 inner join tracks t on tc.track_id = t.id
-inner join segments s on s.track_id = t.id
 where c.id = $1
 `
 

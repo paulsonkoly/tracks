@@ -1,18 +1,53 @@
 <!doctype html>
 <html>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="/static/css/tracks.css" rel="stylesheet">
-  <link href="/static/css/ol.css" rel="stylesheet">
-  <script type="text/javascript" src="/static/js/tracks.js"> </script>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/css/tracks.css" rel="stylesheet">
+    <link href="/static/css/ol.css" rel="stylesheet">
+    <script type="text/javascript" src="/static/js/tracks.js"> </script>
+  </head>
 
-<body class="bg-gray-100">
-  {{template "navbar".}}
-  {{template "flash".}}
-  {{template "content".}}
-</body>
+  <body class="bg-gray-100">
+
+    <div class="flex flex-col min-h-screen">
+      {{template "navbar".}}
+      <!-- Main Content -->
+      <main class="flex-grow">
+        {{template "flash".}}
+        {{template "content".}}
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-gray-200 text-gray-600 text-sm">
+        <div class="flex flex-wrap justify-between items-center px-6 py-3 max-w-7xl mx-auto">
+          <!-- Left Section: GitHub Link -->
+          <div class="flex items-center gap-2">
+            <a href="https://github.com/paulsonkoly/tracks" target="_blank" class="flex items-center hover:text-gray-800">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="h-5 w-5" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.111.82-.261.82-.579 0-.286-.01-1.04-.015-2.04-3.338.725-4.042-1.61-4.042-1.61-.546-1.388-1.333-1.757-1.333-1.757-1.09-.745.082-.73.082-.73 1.205.084 1.84 1.238 1.84 1.238 1.07 1.834 2.807 1.304 3.492.997.108-.775.418-1.304.762-1.604-2.665-.305-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.536-1.523.118-3.176 0 0 1.008-.323 3.3 1.23a11.48 11.48 0 013.003-.403c1.02.005 2.046.137 3.003.403 2.292-1.554 3.3-1.23 3.3-1.23.655 1.653.243 2.873.12 3.176.77.84 1.236 1.91 1.236 3.22 0 4.61-2.807 5.62-5.479 5.918.429.37.81 1.096.81 2.21 0 1.597-.014 2.885-.014 3.276 0 .319.216.694.825.576C20.565 21.797 24 17.302 24 12c0-6.627-5.373-12-12-12z" clip-rule="evenodd"/>
+              </svg>
+              &nbsp;
+              <span>GitHub</span>
+            </a>
+          </div>
+
+          <!-- Center Section: Copyright -->
+          <div class="text-center flex-1">
+            <p>&copy; 2024 Tracks. All rights reserved.</p>
+            <p>Map data &copy; <a href="https://www.openstreetmap.org/" target="_blank" class="hover:underline">OpenStreetMap</a> contributors</p>
+            <p>Tiles courtesy of <a href="https://opentopomap.org/" target="_blank" class="hover:underline">OpenTopoMap</a></p>
+          </div>
+
+          <!-- Right Section: Empty for Flex Alignment -->
+          <div class="w-16"></div>
+        </div>
+      </footer>
+
+    </div>
+
+
+  </body>
 
 </html>

@@ -173,17 +173,16 @@ func (q Queries) GetGPXFiles() ([]GPXFile, error) {
 	return result, nil
 }
 
-// GPXFileUnique returns wether a GPX file will be unique with the given file
-// name.
-func (q Queries) GPXFileUnique(filename string) (bool, error) {
+// GPXFilenameExists returns wether a GPX filename exists in the database.
+func (q Queries) GPXFilenameExists(filename string) (bool, error) {
 	_, err := q.sqlc.GetGPXFileByFilename(q.ctx, filename)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
+			return false, nil
 		}
 		return false, err
 	}
-	return false, nil
+	return true, nil
 }
 
 func strConv(s sql.NullString) *string {

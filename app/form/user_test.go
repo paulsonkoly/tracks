@@ -33,13 +33,13 @@ var userEditTestData = [...]userTestDatum{
 	{form.User{Username: "duplicate", Password: "password", PasswordConfirm: "password"}, false, []string{"Username taken."}, nil},
 }
 
-type UserTestUnique struct{}
+type testUserPresenceChecker struct{}
 
-func (u UserTestUnique) UserUnique(username string) (bool, error) {
-	return username != "duplicate", nil
+func (u testUserPresenceChecker) UsernameExists(username string) (bool, error) {
+	return username == "duplicate", nil
 }
-func (u UserTestUnique) UserUniqueExceptID(_ int, username string) (bool, error) {
-	return username != "duplicate", nil
+func (u testUserPresenceChecker) UsernameExistsNotID(_ int, username string) (bool, error) {
+	return username == "duplicate", nil
 }
 
 func TestUserValidate(t *testing.T) {
@@ -63,9 +63,9 @@ func testUserForm(t *testing.T, op string, testData []userTestDatum) {
 
 			switch op {
 			case "save":
-				result, err = f.Validate(UserTestUnique{})
+				result, err = f.Validate(testUserPresenceChecker{})
 			case "edit":
-				result, err = f.ValidateEdit(UserTestUnique{})
+				result, err = f.ValidateEdit(testUserPresenceChecker{})
 			}
 
 			assert.NoError(t, err)

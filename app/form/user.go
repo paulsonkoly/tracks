@@ -13,24 +13,24 @@ type User struct {
 	errors          `form:"-"`
 }
 
-// UserUniqueChecker checks if the user does not exist in the database.
-type UserUniqueChecker interface {
-	// Username is not yet in the database.
-	UserUnique(username string) (bool, error)
+// UserPresenceChecker checks if the user exists in the database.
+type UserPresenceChecker interface {
+	// UserExists returns wether the username already exists in the database.
+	UsernameExists(username string) (bool, error)
 
-	// Username is not yet in the database, except it is allowed to match user with id.
-	UserUniqueExceptID(id int, username string) (bool, error)
+	// UsernameExistsNotID returns wether the username already exists in the database apart from checking the user with id.
+	UsernameExistsNotID(id int, username string) (bool, error)
 }
 
 // Validate validates the user data.
-func (f *User) Validate(uniq UserUniqueChecker) (bool, error) {
+func (f *User) Validate(check UserPresenceChecker) (bool, error) {
 	f.validateUsername()
 
-	ok, err := uniq.UserUnique(f.Username)
+	exists, err := check.UsernameExists(f.Username)
 	if err != nil {
 		return false, err
 	}
-	if !ok {
+	if exists {
 		f.AddError("Username taken.")
 	}
 
@@ -41,15 +41,15 @@ func (f *User) Validate(uniq UserUniqueChecker) (bool, error) {
 
 // ValidateEdit validates the user data for editing. Empty data fields are not
 // updated, so they are valid. Username uniqueness is not validated *if* it's the same userid.
-func (f *User) ValidateEdit(uniq UserUniqueChecker) (bool, error) {
+func (f *User) ValidateEdit(check UserPresenceChecker) (bool, error) {
 	if f.Username != "" {
 		f.validateUsername()
 
-		ok, err := uniq.UserUniqueExceptID(f.ID, f.Username)
+		exists, err := check.UsernameExistsNotID(f.ID, f.Username)
 		if err != nil {
 			return false, err
 		}
-		if !ok {
+		if exists {
 			f.AddError("Username taken.")
 		}
 	}

@@ -94,8 +94,8 @@ func (q Queries) GetMatchingTracks(name string) ([]Track, error) {
 	return r, nil
 }
 
-// TrackIDsPresent checks if the given track IDs are present in the database.
-func (q Queries) TrackIDsPresent(ids []int) (bool, error) {
+// TrackIDsExist checks if the given track IDs are present in the database.
+func (q Queries) TrackIDsExist(ids []int) (bool, error) {
 	conv := make([]int32, len(ids))
 	for i, id := range ids {
 		conv[i] = int32(id)

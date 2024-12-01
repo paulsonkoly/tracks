@@ -28,16 +28,16 @@ func (q Queries) InsertCollection(name string, user User, trackIDs []int) error 
 	})
 }
 
-// CollectionUnique checks if the collection with the given name exists. Returns true if it doesn't.
-func (q Queries) CollectionUnique(name string) (bool, error) {
+// CollectionNameExists checks if the collection with the given name exists.
+func (q Queries) CollectionNameExists(name string) (bool, error) {
 	_, err := q.sqlc.GetCollectionByName(q.ctx, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
+			return false, nil
 		}
 		return false, err
 	}
-	return false, nil
+	return true, nil
 }
 
 // GetCollection fetches the collection with the given id.

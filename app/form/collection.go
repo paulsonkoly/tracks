@@ -9,38 +9,40 @@ type Collection struct {
 	errors `form:"-"`
 }
 
-// CollectionUniqueChecker checks if a collection name is unqiue.
-type CollectionUniqueChecker interface {
-	CollectionUnique(name string) (bool, error)
+// CollectionUniqueChecker checks if a collection exists in the database.
+type CollectionPresenceChecker interface {
+	// CollectionNameExists checks if the collection name exists in the database.
+	CollectionNameExists(name string) (bool, error)
 }
 
-// TrackIDsPresentChecker checks if the track ids are present in the database.
-type TrackIDsPresentChecker interface {
-	TrackIDsPresent(ids []int) (bool, error)
+// TrackPresenceChecker checks if the track is present in the database.
+type TrackPresenceChecker interface {
+	// TrackIDsExist checks if the track ids all exist in the database.
+	TrackIDsExist(ids []int) (bool, error)
 }
 
 type formChecker interface {
-	CollectionUniqueChecker
-	TrackIDsPresentChecker
+	CollectionPresenceChecker
+	TrackPresenceChecker
 }
 
 // Validate validates the collection data.
-func (c *Collection) Validate(chk formChecker) (bool, error) {
+func (c *Collection) Validate(check formChecker) (bool, error) {
 	c.validateName()
 
-	ok, err := chk.CollectionUnique(c.Name)
+	exists, err := check.CollectionNameExists(c.Name)
 	if err != nil {
 		return false, err
 	}
-	if !ok {
+	if exists {
 		c.AddError("Name already taken.")
 	}
 
-	ok, err = chk.TrackIDsPresent(c.TrackIDs)
+	exist, err := check.TrackIDsExist(c.TrackIDs)
 	if err != nil {
 		return false, err
 	}
-	if !ok {
+	if !exist {
 		c.AddError("Tracks are not valid.")
 	}
 

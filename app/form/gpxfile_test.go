@@ -23,16 +23,16 @@ var gpxFileTestData = [...]gpxFileTestDatum{
 	{"no extension", "example", false},
 }
 
-type gpxFileTestUnique struct{}
+type testGPXFilePresenceChecker struct{}
 
-func (u gpxFileTestUnique) GPXFileUnique(_ string) (bool, error) { return true, nil }
+func (u testGPXFilePresenceChecker) GPXFilenameExists(_ string) (bool, error) { return false, nil }
 
 func TestFileValidate(t *testing.T) {
 	for _, test := range gpxFileTestData {
 		t.Run(test.name, func(t *testing.T) {
 			form := form.GPXFile{Filename: test.fileName}
 
-			result, err := form.Validate(gpxFileTestUnique{})
+			result, err := form.Validate(testGPXFilePresenceChecker{})
 			if err != nil {
 				t.Errorf("File{Filename: %q}.Validate() returned error: %v", form.Filename, err)
 			}

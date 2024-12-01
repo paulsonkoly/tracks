@@ -119,26 +119,26 @@ func (q Queries) DeleteUser(id int) error {
 	return q.sqlc.DeleteUser(q.ctx, int32(id))
 }
 
-// UserUnique checks if user with given username exists.
-func (q Queries) UserUnique(username string) (bool, error) {
+// UsernameExists checks if the username exists in the database.
+func (q Queries) UsernameExists(username string) (bool, error) {
 	_, err := q.sqlc.GetUserByName(q.ctx, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
+			return false, nil
 		}
 		return false, err
 	}
-	return false, nil
+	return true, nil
 }
 
-// UserUniqueExceptID checks if user with given username exists except given id.
-func (q Queries) UserUniqueExceptID(id int, username string) (bool, error) {
+// UsernameExistsNotID checks if user with given username exists except given id.
+func (q Queries) UsernameExistsNotID(id int, username string) (bool, error) {
 	_, err := q.sqlc.GetUserByNameNotID(q.ctx, sqlc.GetUserByNameNotIDParams{ID: int32(id), Username: username})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return true, nil
+			return false, nil
 		}
 		return false, err
 	}
-	return false, nil
+	return true, nil
 }

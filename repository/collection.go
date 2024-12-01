@@ -9,10 +9,10 @@ import (
 
 // Collection is a collection of [Track]s.
 type Collection struct {
-	ID     int
-	Name   string  // Name of the collection.
-	User   User    // User is the owner of the collection.
-	Tracks []Track // Tracks are the contained tracks.
+	ID     int     `json:"-"`
+	Name   string  `json:"-"`      // Name of the collection.
+	User   User    `json:"-"`      // User is the owner of the collection.
+	Tracks []Track `json:"tracks"` // Tracks are the contained tracks.
 }
 
 // InsertCollection adds a new collection of tracks with the given name.
@@ -42,52 +42,26 @@ func (q Queries) CollectionUnique(name string) (bool, error) {
 
 // GetCollection fetches the collection with the given id.
 func (q Queries) GetCollection(id int) (Collection, error) {
-	var result Collection
-	name, err := q.sqlc.GetCollection(q.ctx, int32(id))
+	name, err := q.sqlc.GetCollectionName(q.ctx, int32(id))
 	if err != nil {
-		return result, err
+		return Collection{}, err
 	}
 
+	return Collection{ID: id, Name: name}, nil
+}
+
+// GetCollectionTracks fetches the tracks in a collection.
+func (q Queries) GetCollectionTracks(id int) (result Collection, err error) {
 	trks, err := q.sqlc.GetCollectionTracks(q.ctx, int32(id))
 	if err != nil {
 		return result, nil
 	}
 
-	result.Name = name
 	result.Tracks = make([]Track, len(trks))
 
 	for i, trk := range trks {
 		result.Tracks[i].ID = int(trk.ID)
 		result.Tracks[i].Name = trk.Name
-	}
-
-	return result, nil
-}
-
-// GetCollectionPoints returns the points of a track.
-func (q Queries) GetCollectionPoints(id int) ([]Segment, error) {
-	result := []Segment{}
-
-	sIDs, err := q.sqlc.GetCollectionSegments(q.ctx, int32(id))
-	if err != nil {
-		return nil, err
-	}
-
-	for _, sID := range sIDs {
-		pts, err := q.sqlc.GetSegmentPoints(q.ctx, sID)
-		if err != nil {
-			return nil, err
-		}
-
-		conv := make(Segment, len(pts))
-		for i, p := range pts {
-			conv[i] = Point{
-				Latitude:  p.Latitude,
-				Longitude: p.Longitude,
-			}
-		}
-
-		result = append(result, conv)
 	}
 
 	return result, nil

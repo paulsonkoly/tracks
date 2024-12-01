@@ -13,11 +13,11 @@ import (
 type Track struct {
 	ID           int            `json:"id"`
 	Name         string         `json:"name"`
-	Type         sqlc.Tracktype // TODO remove sqlc
-	CreatedAt    time.Time
-	Time         *time.Time
-	LengthMeters float64
-	User         *User
+	Type         sqlc.Tracktype `json:"-"` // TODO remove sqlc
+	CreatedAt    time.Time      `json:"-"`
+	Time         *time.Time     `json:"-"`
+	LengthMeters float64        `json:"-"`
+	User         *User          `json:"-"`
 }
 
 // InsertTrack inserts a new track into the database.

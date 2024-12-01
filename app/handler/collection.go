@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/paulsonkoly/tracks/app/form"
+	"github.com/timewasted/go-accept-headers"
 )
 
 // NewCollection renders a form to create a new track collection.
@@ -64,6 +65,24 @@ func (h *Handler) PostNewCollection(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Collection handles requests to /collection/{id} either json or html.
+func (h *Handler) Collection(w http.ResponseWriter, r *http.Request) {
+	a := h.app
+
+	hdr := accept.Parse(r.Header.Get("Accept"))
+	switch {
+	case hdr.Accepts("text/html"):
+		h.ViewCollection(w, r)
+
+	case hdr.Accepts("application/json"):
+		h.ListCollectionTracks(w, r)
+
+	default:
+		a.ClientError(w, errors.New(http.StatusText(http.StatusUnsupportedMediaType)), http.StatusUnsupportedMediaType)
+
+	}
+}
+
 // ViewCollection renders the collection map page.
 func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
 	a := h.app
@@ -90,7 +109,7 @@ func (h *Handler) ViewCollection(w http.ResponseWriter, r *http.Request) {
 }
 
 // ListCollectionPoints returns a json array of segments of points for the collection.
-func (h *Handler) ListCollectionPoints(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListCollectionTracks(w http.ResponseWriter, r *http.Request) {
 	a := h.app
 
 	id, err := strconv.Atoi(r.PathValue("id"))
@@ -99,7 +118,7 @@ func (h *Handler) ListCollectionPoints(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	points, err := a.Q(r.Context()).GetCollectionPoints(id)
+	c, err := a.Q(r.Context()).GetCollectionTracks(id)
 	if err != nil {
 		a.ServerError(w, err)
 		return
@@ -107,7 +126,7 @@ func (h *Handler) ListCollectionPoints(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	err = json.NewEncoder(w).Encode(points)
+	err = json.NewEncoder(w).Encode(c)
 	if err != nil {
 		a.ServerError(w, err)
 		return

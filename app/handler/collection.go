@@ -132,3 +132,24 @@ func (h *Handler) ListCollectionTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// DeleteCollection handles post requests to delete a collection.
+func (h *Handler) DeleteCollection(w http.ResponseWriter, r *http.Request) {
+	a := h.app
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		a.ClientError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	if err := a.Q(r.Context()).DeleteCollection(id); err != nil {
+		a.ServerError(w, err)
+		return
+	}
+
+	a.FlashInfo(r.Context(), "Collection deleted.")
+	a.LogAction(r.Context(), "collection deleted", "id", id)
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}

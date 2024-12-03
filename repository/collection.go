@@ -83,3 +83,8 @@ func (q Queries) GetCollections() ([]Collection, error) {
 
 	return result, nil
 }
+
+// DeleteCollection deletes a collection.
+func (q Queries) DeleteCollection(id int) error {
+	return q.sqlc.DeleteCollection(q.ctx, int32(id))
+}

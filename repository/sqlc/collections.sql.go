@@ -11,6 +11,15 @@ import (
 	"github.com/lib/pq"
 )
 
+const deleteCollection = `-- name: DeleteCollection :exec
+delete from collections where id = $1
+`
+
+func (q *Queries) DeleteCollection(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteCollection, id)
+	return err
+}
+
 const getCollectionByName = `-- name: GetCollectionByName :one
 select id, name, user_id from collections where name = $1
 `

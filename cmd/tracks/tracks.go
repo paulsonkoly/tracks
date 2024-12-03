@@ -45,6 +45,7 @@ func main() {
 	mux.Handle("GET /collection/new", app.RequiresLogIn(http.HandlerFunc(handlers.NewCollection)))
 	mux.Handle("POST /collection/new", app.RequiresLogIn(http.HandlerFunc(handlers.PostNewCollection)))
 	mux.HandleFunc("GET /collection/{id}", handlers.Collection)
+	mux.Handle("POST /collection/{id}/delete", app.RequiresLogIn(http.HandlerFunc(handlers.DeleteCollection)))
 
 	// GPX file
 	mux.Handle("GET /gpxfiles", app.RequiresLogIn(http.HandlerFunc(handlers.GPXFiles)))

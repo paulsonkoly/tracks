@@ -14,16 +14,30 @@
     </div>
 
     <!-- Track Names Section -->
-    <div class="w-[30%] bg-white border border-gray-300 rounded-lg shadow-lg p-4 self-start">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="border-b border-gray-300">
-            <th class="py-2 px-4">Tracks</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
+    <div class="w-[30%]">
+      <!-- Rounded div holding the tracks table -->
+      <div class="bg-white border border-gray-300 rounded-lg shadow-lg p-4">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-gray-300">
+              <th class="py-2 px-4">Tracks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Add rows here dynamically if needed -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Delete button outside the rounded div but still in the same column -->
+      {{if $.CurrentUser}}
+      <form action="/collection/{{.ID}}/delete" method="POST" class="confirm mt-4">
+        <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+        <button type="submit" class="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+          Delete Collection
+        </button>
+      </form>
+      {{end}}
     </div>
   </div>
 </div>

@@ -11,3 +11,6 @@ select * from collections where name = $1;
 
 -- name: GetCollections :many
 select c.id, c.name from collections c order by c.id;
+
+-- name: DeleteCollection :exec
+delete from collections where id = $1;

@@ -30,7 +30,6 @@ fi
 
 echo "✅ All required tools are installed."
 
-
 osascript <<EOF
 tell application "iTerm"
   -- Tab 1: Tailwind watcher

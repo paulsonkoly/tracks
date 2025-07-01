@@ -32,11 +32,13 @@ echo "✅ All required tools are installed."
 
 osascript <<EOF
 tell application "iTerm"
-  -- Tab 1: Tailwind watcher
+  -- Tab 1: init-db + Tailwind watcher
   set newWindow to (create window with default profile)
   tell current session of newWindow
       write text "./init_db.sh && cd \"$PROJECT_DIR/assets\" && npm install && npx tailwindcss -i tracks.css -o ../static/css/tracks.css --watch"
   end tell
+
+  delay 3
 
   -- Tab 2: Rollup watcher
   tell current window

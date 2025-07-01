@@ -4,26 +4,25 @@ set -e
 
 source .env
 
-echo "Checking DB role..."
-ROLE_EXISTS=$(psql -U $DB_NAME -tc "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER';" | grep -q 1 && echo yes || echo no)
-if [ "$ROLE_EXISTS" = "no" ]; then
-  echo "Creating DB role..."
-  psql -U $DB_NAME -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASSWORD' SUPERUSER;"
+PSQL_BASE=(psql -h "localhost" -p "5432" -d postgres -qtAX)
+
+echo "Checking if DB role '$DB_USER' exists..."
+if ! "${PSQL_BASE[@]}" -c "SELECT 1 FROM pg_roles WHERE rolname = '$DB_USER';" | grep -q 1; then
+  echo "Creating DB role '$DB_USER'..."
+  "${PSQL_BASE[@]}" -c "CREATE ROLE $DB_USER WITH LOGIN PASSWORD '$DB_PASSWORD' SUPERUSER;"
 fi
 
-echo "Checking database..."
-DB_EXISTS=$(psql -U $DB_NAME -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME';" | grep -q 1 && echo yes || echo no)
-if [ "$DB_EXISTS" = "no" ]; then
+echo "Checking if database '$DB_NAME' exists..."
+if ! "${PSQL_BASE[@]}" -c "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME';" | grep -q 1; then
   echo "Creating and loading DB..."
   dbmate create
   dbmate load
-  psql -U $DB_NAME -c "ALTER ROLE $DB_USER NOSUPERUSER;"
+  "${PSQL_BASE[@]}" -c "ALTER ROLE $DB_USER NOSUPERUSER;"
 fi
 
-echo "Checking admin user..."
-ADMIN_EXISTS=$(psql "$DATABASE_URL" -tc "SELECT 1 FROM users WHERE username = '$DB_USER';" | grep -q 1 && echo yes || echo no)
-if [ "$ADMIN_EXISTS" = "no" ]; then
-  echo "Inserting admin user..."
+echo "Checking if admin user '$ADMIN_USER' exists in DB..."
+if ! psql "$DATABASE_URL" -qtAX -c "SELECT 1 FROM users WHERE username = '$ADMIN_USER';" | grep -q 1; then
+  echo "Inserting admin user '$ADMIN_USER'..."
   psql "$DATABASE_URL" -c "INSERT INTO users (username, hashed_password, created_at) VALUES ('$ADMIN_USER', '$ADMIN_PASSWORD', NOW());"
 fi
 
